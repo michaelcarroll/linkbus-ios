@@ -7,7 +7,6 @@
 //
 
 import SwiftUI
-import HalfASheet
 import PartialSheet
 
 struct Home: View {
@@ -25,7 +24,7 @@ struct Home: View {
     @State var lastRefreshTime = ""
     @State var greeting = "Linkbus"
     
-    @State private var showingChangeDate = false
+    @State var showingChangeDate = false
     
     
     var calendarButton: some View {
@@ -110,7 +109,7 @@ struct Home: View {
         }
         .addPartialSheet()
         .partialSheet(isPresented: $showingChangeDate) {
-            DateSheet(routeController: routeController)
+            DateSheet(routeController: routeController, home: self)
         }
 //        .halfASheet(isPresented: $showingChangeDate) {
 //            DateSheet(routeController: routeController)
