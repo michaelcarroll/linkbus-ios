@@ -10,8 +10,8 @@ import SwiftUI
 
 class RouteController: ObservableObject {
     let CsbsjuApiUrl = "https://apps.csbsju.edu/busschedule/api"
-    //let LinkbusApiUrl = "https://us-central1-linkbus-website.cloudfunctions.net/api" // Production API
-    let LinkbusApiUrl = "https://us-central1-linkbus-website-development.cloudfunctions.net/api" // Development API
+    let LinkbusApiUrl = "https://us-central1-linkbus-website.cloudfunctions.net/api" // Production API
+    //let LinkbusApiUrl = "https://us-central1-linkbus-website-development.cloudfunctions.net/api" // Development API
     
     var csbsjuApiResponse = BusSchedule(msg: "", attention: "", routes: [Route]())
     var linkbusApiResponse = LinkbusApi(alerts: [Alert](), routes: [RouteDetail](), schoolAlertsSettings: [SchoolAlertsSettings]())

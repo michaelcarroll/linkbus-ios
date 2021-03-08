@@ -107,7 +107,17 @@ struct Home: View {
         .sheet(isPresented: $showOnboardingSheet) {
             OnboardingView()
         }
-        .addPartialSheet()
+        .addPartialSheet(
+            style: PartialSheetStyle(
+                background: (colorScheme == .dark ? .blur(UIBlurEffect.Style.prominent) : .blur(UIBlurEffect.Style.prominent)),
+                //background: .solid(Color(UIColor.secondarySystemBackground)),
+                handlerBarColor: Color(UIColor.systemGray2),
+                enableCover: true,
+                coverColor: Color.black.opacity(0.4),
+                blurEffectStyle: .dark,
+                cornerRadius: 7,
+                minTopDistance: 0)
+        )
         .partialSheet(isPresented: $showingChangeDate) {
             DateSheet(routeController: routeController, home: self)
         }

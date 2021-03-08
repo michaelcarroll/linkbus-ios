@@ -218,7 +218,7 @@ struct RouteSheet: View {
                 .navigationBarHidden(true)
                 
             }
-            .background(Color(UIColor.systemGroupedBackground)).edgesIgnoringSafeArea(.all)
+            //.background(Color(UIColor.systemGroupedBackground)).edgesIgnoringSafeArea(.all)
         }
         
     }

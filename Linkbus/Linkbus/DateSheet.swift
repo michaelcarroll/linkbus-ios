@@ -36,7 +36,9 @@ struct DateSheet: View {
             //self.isPresented.toggle()
             // If this vvv is uncommented then the sheet will close when a date is selected
             self.presentationMode.wrappedValue.dismiss()
+            if #available(iOS 14.0, *) {
             self.home.showingChangeDate = false;
+            }
         })
     }
     
@@ -63,7 +65,6 @@ struct DateSheet: View {
                     //                            Text("Done")
                     //                        }
                     //                    }
-                    VStack(alignment: .leading, spacing: 0) {
                         //                        Button(action: {
                         //                            withAnimation {
                         //                                self.showDatePicker.toggle()
@@ -87,12 +88,12 @@ struct DateSheet: View {
                                     displayedComponents: .date,
                                     label:{ Text("Selected Date") }
                                 )
-                                .labelsHidden()
-                                .frame(maxWidth: .infinity, alignment: .center)
+                                //.labelsHidden()
+                                //.frame(maxWidth: .infinity, alignment: .center)
                                 .datePickerStyle(GraphicalDatePickerStyle())
                                 .padding(.horizontal)
-                                //.padding(.top, 6)
-                                .background((colorScheme == .dark ? Color(UIColor.secondarySystemBackground) : Color(UIColor.secondarySystemBackground)))
+                                .padding(.top, 6)
+                                .background((colorScheme == .dark ? Color(UIColor.tertiarySystemBackground) : Color(UIColor.tertiarySystemBackground)))
                                 .cornerRadius(15)
                                 //.datePickerStyle(CompactDatePickerStyle())
                             } else {
@@ -111,11 +112,11 @@ struct DateSheet: View {
                     //                        RoundedRectangle(cornerRadius: 10)
                     //                            .stroke(Color.secondary, lineWidth: 1)
                     //                    )
-                }
+        
                 .padding() // Padding for everything above the routes
             
-        
-        //.background(Color(UIColor.systemGroupedBackground)).edgesIgnoringSafeArea(.all)
+                //.background(Blur())
+        //.background(Color(UIColor.secondarySystemBackground)).edgesIgnoringSafeArea(.all)
     }
 }
 
