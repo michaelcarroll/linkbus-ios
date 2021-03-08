@@ -69,7 +69,7 @@ struct Home: View {
                     RouteList(routeController: routeController)
                 }
                 .padding(.top, 0.3) // !! FIXES THE WEIRD NAVIGATION BAR GRAPHICAL GLITCHES WITH SCROLLVIEW IN NAVVIEW
-                .navigationBarTitle(self.menuBarTitle, displayMode: .automatic)
+                .navigationBarTitle(self.menuBarTitle)
                 //.background((colorScheme == .dark ? Color(UIColor.systemBackground) : Color(UIColor.systemGray6)))
                 .navigationBarItems(trailing: calendarButton)
             } else { // iOS 13

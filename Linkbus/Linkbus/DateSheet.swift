@@ -46,8 +46,8 @@ struct DateSheet: View {
     }()
     
     var body: some View {
-        VStack(spacing: 0) {
-            VStack(alignment: .leading, spacing: 0) {
+        
+           
                 // This VStack in charge of placing elements correctly, ScrollView won't on its own
                 VStack(spacing: 14) {
                     //                    HStack {
@@ -90,7 +90,7 @@ struct DateSheet: View {
                                 .datePickerStyle(GraphicalDatePickerStyle())
                                 .padding(.horizontal)
                                 //.padding(.top, 6)
-                                .background((colorScheme == .dark ? Color(UIColor.secondarySystemBackground) : Color(UIColor.systemBackground)))
+                                .background((colorScheme == .dark ? Color(UIColor.secondarySystemBackground) : Color(UIColor.secondarySystemBackground)))
                                 .cornerRadius(15)
                                 //.datePickerStyle(CompactDatePickerStyle())
                             } else {
@@ -111,9 +111,9 @@ struct DateSheet: View {
                     //                    )
                 }
                 .padding() // Padding for everything above the routes
-            }
-        }
-        .background(Color(UIColor.systemGroupedBackground)).edgesIgnoringSafeArea(.all)
+            
+        
+        //.background(Color(UIColor.systemGroupedBackground)).edgesIgnoringSafeArea(.all)
     }
 }
 
