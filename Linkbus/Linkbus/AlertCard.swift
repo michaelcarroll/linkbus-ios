@@ -36,17 +36,21 @@ struct AlertCard: View {
             "gray": Color.gray
         ]
         
-        if alertColor != "" {
-            // TODO: Check if color is in colors
-            color = colors[alertColor] ?? Color(
+        // Use RGB when alertColor is empty
+        if alertColor == "" {
+            color = Color(
                 red: alertRgb.red,
                 green: alertRgb.green,
                 blue: alertRgb.blue,
                 opacity: alertRgb.opacity
-            )}
-        else {
-            color = Color.blue
+            )
+        } else {
+            // Convert color string into Color Object
+            // "red" => Color.red
+            // Default to blue if color is not in array
+            color = colors[alertColor] != nil ? colors[alertColor]! : Color.blue
         }
+        
         
         self.alertColor = color
         self.fullWidth = fullWidth
