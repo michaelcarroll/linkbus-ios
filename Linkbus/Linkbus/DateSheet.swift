@@ -14,9 +14,11 @@ struct DateSheet: View {
     @State private var showDatePicker = true
     @Environment(\.presentationMode) var presentationMode
     @Environment(\.colorScheme) var colorScheme
+    var home: Home
     
-    init(routeController: RouteController) {
+    init(routeController: RouteController, home: Home) {
         self.routeController = routeController
+        self.home = home
         if routeController.dateIsChanged {
             self._selectedDate = State<Date>(initialValue: routeController.selectedDate)
         }
@@ -34,7 +36,7 @@ struct DateSheet: View {
             //self.isPresented.toggle()
             // If this vvv is uncommented then the sheet will close when a date is selected
             self.presentationMode.wrappedValue.dismiss()
-            
+            self.home.showingChangeDate = false;
         })
     }
     
