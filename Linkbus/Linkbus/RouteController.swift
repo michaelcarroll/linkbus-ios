@@ -166,12 +166,17 @@ extension RouteController {
     }
     
     func fetchCsbsjuApi(completionHandler: @escaping (BusSchedule?) -> Void) {
-        // Format date object into string e.g. 10/23/20
-        let formatter = DateFormatter()
-        formatter.dateStyle = .short
-        let formattedDate = formatter.string(from: selectedDate)
-        // Add date to URL
-        let urlString = CsbsjuApiUrl + "?date=" + formattedDate
+        var urlString = ""
+        if self.dateIsChanged {
+            // Format date object into string e.g. 10/23/20
+            let formatter = DateFormatter()
+            formatter.dateStyle = .short
+            let formattedDate = formatter.string(from: selectedDate)
+            // Add date to URL
+            urlString = CsbsjuApiUrl + "?date=" + formattedDate
+        } else {
+            urlString = CsbsjuApiUrl
+        }
         let url = URL(string: urlString)!
         
         let task = URLSession.shared.dataTask(with: url, completionHandler: { (data, response, error) in
