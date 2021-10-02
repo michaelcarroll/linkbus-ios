@@ -108,7 +108,7 @@ struct AlertCard: View {
             ])
         }
         // .shadow(color: Color.black.opacity(0.2), radius: 7, x: 0, y: 2)
-        //https://medium.com/@masamichiueta/bridging-uicolor-system-color-to-swiftui-color-ef98f6e21206
+        // https://medium.com/@masamichiueta/bridging-uicolor-system-color-to-swiftui-color-ef98f6e21206
     }
     
 }
