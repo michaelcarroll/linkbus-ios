@@ -9,6 +9,7 @@
 import SwiftUI
 import PartialSheet
 import ActivityIndicatorView
+import PopupView
 
 struct Home: View {
     
@@ -22,11 +23,13 @@ struct Home: View {
     @State var timeOfDay = "default"
     @State var menuBarTitle = "Linkbus"
     @State var initial = true
-    @State var lastRefreshTime = ""
+    @State var lastRefreshTimeString = ""
     @State var greeting = "Linkbus"
     
     @State var showingChangeDate = false
-    @State var showLoadingIndicator = true
+    
+    @State var webRequestJustFinished = false
+    @State var lastRefreshTime = Date().timeIntervalSince1970
     
     
     var calendarButton: some View {
@@ -42,7 +45,7 @@ struct Home: View {
     }
     
     var loadingIndicator: some View {
-        ActivityIndicatorView(isVisible: $routeController.webRequestInProgress, type: .gradient([Color.white, Color.blue]))
+        ActivityIndicatorView(isVisible: $routeController.webRequestIsSlow, type: .gradient([Color.white, Color.blue]))
             .frame(width: 19, height: 19)
     }
     
@@ -64,7 +67,7 @@ struct Home: View {
         let timeFormatter = DateFormatter()
         timeFormatter.dateFormat = "HH:mm"
         //self.lastRefreshTime = timeFormatter.string(from: time)
-        _lastRefreshTime = State(initialValue: timeFormatter.string(from: time))
+        _lastRefreshTimeString = State(initialValue: timeFormatter.string(from: time))
     }
     
     var body: some View {
@@ -156,7 +159,23 @@ struct Home: View {
         //            .halfASheet(isPresented: $showingChangeDate) {
         //                DateSheet(routeController: routeController)
         //            }
+        .popup(isPresented: $webRequestJustFinished, type: .toast, position: .top,
+               animation: .spring(), autohideIn: 2, dragToDismiss: false, closeOnTap: true) {
+            HStack(){
+                Text("Routes times updated")
+                    .font(Font.custom("HelveticaNeue", size: 14))
+                Image(systemName: "xmark")
+                    .imageScale(.small)
+                    .accessibility(label: Text("Close"))
+            }
+                .padding(10)
+                .background(Color(red: 46 / 256, green: 98 / 256, blue: 158 / 256))
+                .foregroundColor(Color(red: 244 / 256, green: 247 / 256, blue: 250 / 256))
+                .cornerRadius(18.0)
+                .padding(50)
+        }
     }
+        
 }
 
 
@@ -256,11 +275,19 @@ func autoRefreshData(self: Home) {
     let currentTime = timeFormatter.string(from: time)
     //                print("last ref: " + self.lastRefreshTime)
     //                print("current time: " + currentTime)
-    //                print("local desc: " + routeController.localizedDescription)
-    if self.lastRefreshTime != currentTime {
+    //                print("local desc: " + routeController.localizedDescription
+    if self.lastRefreshTimeString != currentTime {
         print("Refreshing data")
         self.routeController.webRequest()
-        self.lastRefreshTime = currentTime
+        self.lastRefreshTimeString = currentTime
+        // 120 seconds have passed
+        if self.lastRefreshTime + 120 < Date().timeIntervalSince1970 {
+            if self.routeController.deviceOnlineStatus != "offline" {
+                print("Pop up")
+                self.webRequestJustFinished = true
+            }
+            self.lastRefreshTime = Date().timeIntervalSince1970
+        }
     }
 }
 

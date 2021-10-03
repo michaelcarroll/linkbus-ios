@@ -24,6 +24,7 @@ class RouteController: ObservableObject {
     
     public var webRequestInProgress = false
     public var initalWebRequestFinished = false // Used by main view
+    public var webRequestIsSlow = false
     
     private var dailyMessage = ""
     private var campusAlert = ""
@@ -97,6 +98,14 @@ extension RouteController {
     func webRequest() {
         
         if webRequestInProgress == false {
+            // Show the loading indicator after the Linkbus API takes more than 1 second to respond
+            Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false) { timer in
+                if self.webRequestInProgress {
+                    print("Web request is taking more than a second")
+                    self.webRequestIsSlow = true
+                }
+            }
+            
             webRequestInProgress = true
             self.localizedDescription = "default"
             
@@ -186,6 +195,7 @@ extension RouteController {
                     print("Localized desc:" + self.localizedDescription)
                     self.deviceOnlineStatus = "offline"
                     self.webRequestInProgress = false
+                    self.webRequestIsSlow = false
                 }
                 print("Error with fetching bus schedule from CSBSJU API: \(error)")
                 return
@@ -432,6 +442,7 @@ extension RouteController {
         //        }
         
         self.webRequestInProgress = false
+        self.webRequestIsSlow = false
         // Only change this once
         if(!self.initalWebRequestFinished){
             self.initalWebRequestFinished = true
