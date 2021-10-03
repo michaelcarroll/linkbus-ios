@@ -20,6 +20,7 @@
 		4CB7629B24F31F71001FA9CB /* LinkbusApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CB7629A24F31F71001FA9CB /* LinkbusApi.swift */; };
 		4CB762DB24F5D63D001FA9CB /* RouteSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CB762DA24F5D63C001FA9CB /* RouteSheet.swift */; };
 		4CB762DD24F76582001FA9CB /* AlertCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CB762DC24F76582001FA9CB /* AlertCard.swift */; };
+		4CD819952709311C00D7D10D /* ActivityIndicatorView in Frameworks */ = {isa = PBXBuildFile; productRef = 4CD819942709311C00D7D10D /* ActivityIndicatorView */; };
 		7C5A9AC1257329D8001F6458 /* DateSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C5A9AC0257329D8001F6458 /* DateSheet.swift */; };
 		7CE8525B254F95580018F456 /* AlertList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CE8525A254F95580018F456 /* AlertList.swift */; };
 		7CE8525E254F96850018F456 /* Main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CE8525D254F96850018F456 /* Main.swift */; };
@@ -73,6 +74,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4CD819952709311C00D7D10D /* ActivityIndicatorView in Frameworks */,
 				4C53323225F5980C00A3700B /* PartialSheet in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -200,6 +202,7 @@
 			name = Linkbus;
 			packageProductDependencies = (
 				4C53323125F5980C00A3700B /* PartialSheet */,
+				4CD819942709311C00D7D10D /* ActivityIndicatorView */,
 			);
 			productName = Landmarks;
 			productReference = B7394862229F194000C47603 /* Linkbus.app */;
@@ -231,6 +234,7 @@
 			mainGroup = B7394859229F194000C47603;
 			packageReferences = (
 				4C53323025F5980C00A3700B /* XCRemoteSwiftPackageReference "PartialSheet" */,
+				4CD819932709311C00D7D10D /* XCRemoteSwiftPackageReference "ActivityIndicatorView" */,
 			);
 			productRefGroup = B7394863229F194000C47603 /* Products */;
 			projectDirPath = "";
@@ -501,6 +505,14 @@
 				minimumVersion = 2.1.11;
 			};
 		};
+		4CD819932709311C00D7D10D /* XCRemoteSwiftPackageReference "ActivityIndicatorView" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/exyte/ActivityIndicatorView";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -508,6 +520,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 4C53323025F5980C00A3700B /* XCRemoteSwiftPackageReference "PartialSheet" */;
 			productName = PartialSheet;
+		};
+		4CD819942709311C00D7D10D /* ActivityIndicatorView */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4CD819932709311C00D7D10D /* XCRemoteSwiftPackageReference "ActivityIndicatorView" */;
+			productName = ActivityIndicatorView;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
