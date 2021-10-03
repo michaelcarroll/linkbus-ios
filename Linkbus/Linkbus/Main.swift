@@ -92,6 +92,18 @@ struct Home: View {
                         calendarButton
                     }
                 }
+                .popup(isPresented: $webRequestJustFinished, type: .toast, position: .top,
+                       animation: .spring(), autohideIn: 3, dragToDismiss: false, closeOnTap: true) {
+                    HStack(){
+                        Text("Up to date ✅")
+                            .font(Font.custom("HelveticaNeue", size: 14))
+                    }
+                        .padding(10)
+                        .background(Color(red: 46 / 256, green: 98 / 256, blue: 158 / 256))
+                        .foregroundColor(Color(red: 244 / 256, green: 247 / 256, blue: 250 / 256))
+                        .cornerRadius(18.0)
+                        .padding(50)
+                }
             }
             else if #available(iOS 14.0, *) { // iOS 14
                 ScrollView {
@@ -109,6 +121,19 @@ struct Home: View {
                         calendarButton
                     }
                 }
+                .popup(isPresented: $webRequestJustFinished, type: .toast, position: .top,
+                       animation: .spring(), autohideIn: 3, dragToDismiss: true, closeOnTap: true) {
+                    HStack(){
+                        Text("Up to date ✅")
+                            .font(Font.custom("HelveticaNeue", size: 14))
+                    }
+                        .padding(10)
+                        .background(Color(red: 46 / 256, green: 98 / 256, blue: 158 / 256))
+                        .foregroundColor(Color(red: 244 / 256, green: 247 / 256, blue: 250 / 256))
+                        .cornerRadius(18.0)
+                        .padding(50)
+                }
+
             } else { // iOS 13
                 List {
                     AlertList(routeController: routeController)
@@ -179,21 +204,6 @@ struct Home: View {
         //            .halfASheet(isPresented: $showingChangeDate) {
         //                DateSheet(routeController: routeController)
         //            }
-        .popup(isPresented: $webRequestJustFinished, type: .toast, position: .top,
-               animation: .spring(), autohideIn: 2, dragToDismiss: false, closeOnTap: true) {
-            HStack(){
-                Text("Routes times updated")
-                    .font(Font.custom("HelveticaNeue", size: 14))
-                Image(systemName: "xmark")
-                    .imageScale(.small)
-                    .accessibility(label: Text("Close"))
-            }
-                .padding(10)
-                .background(Color(red: 46 / 256, green: 98 / 256, blue: 158 / 256))
-                .foregroundColor(Color(red: 244 / 256, green: 247 / 256, blue: 250 / 256))
-                .cornerRadius(18.0)
-                .padding(50)
-        }
     }
         
 }

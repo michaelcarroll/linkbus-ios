@@ -19,13 +19,14 @@ struct AlertList: View {
     var body: some View {
         
         if #available(iOS 14.0, *) {
-            LazyVStack (alignment: .leading, spacing: 12) {
+            VStack (alignment: .leading, spacing: 12) {
                 Alerts(routeController: self.routeController)
             }
             .padding(.top, 4)
             .padding(.horizontal, 12)
             .transition(.scale)
             .animation(.default)
+            .frame(maxWidth: .infinity, alignment: .leading)
             //.listRowBackground((colorScheme == .dark ? Color(UIColor.systemBackground) : Color(UIColor.systemGray6)))
         } else { // iOS 13
             VStack(alignment: .leading, spacing: 12){
@@ -63,12 +64,12 @@ struct Alerts: View {
             //AlertCard(alertText: "Viewing schedule for a future date", alertColor: "blue", alertRgb: RGBColor(red: 1.0, green: 0.0, blue: 0.0, opacity: 0.0), fullWidth: false, clickable: false, action: "", routeController: routeController)
             AlertCard(alertText: "⬅ Back to today's schedule", alertColor: "blue", alertRgb: RGBColor(red: 1.0, green: 0.0, blue: 0.0, opacity: 0.0), fullWidth: false, clickable: true, action: "resetDate", routeController: routeController)
         }
-        let currentDate = Date()
-        let calendar = Calendar(identifier: .gregorian)
-        let hour = calendar.component(.hour, from: currentDate)
-        if (hour >= 23 && !routeController.dateIsChanged && routeController.deviceOnlineStatus != "offline") {
-            AlertCard(alertText: "View tomorrow's schedule 🌚", alertColor: "blue", alertRgb: RGBColor(red: 0.2, green: 0.2, blue: 0.2, opacity: 1.0), fullWidth: false, clickable: true, action: "changeDateTomorrow", routeController: routeController)
-        }
+//        let currentDate = Date()
+//        let calendar = Calendar(identifier: .gregorian)
+//        let hour = calendar.component(.hour, from: currentDate)
+//        if (hour >= 23 && !routeController.dateIsChanged && routeController.deviceOnlineStatus != "offline") {
+//            AlertCard(alertText: "View tomorrow's schedule 🌚", alertColor: "blue", alertRgb: RGBColor(red: 0.2, green: 0.2, blue: 0.2, opacity: 1.0), fullWidth: false, clickable: true, action: "changeDateTomorrow", routeController: routeController)
+//        }
         ForEach(routeController.lbBusSchedule.alerts) { alert in
             if (routeController.localizedDescription == "The Internet connection appears to be offline.") {
                 AlertCard(alertText: alert.text, alertColor: "gray", alertRgb: alert.rgb, fullWidth: alert.fullWidth, clickable: alert.clickable, action: alert.action, routeController: routeController)
