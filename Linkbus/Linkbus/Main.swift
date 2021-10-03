@@ -8,6 +8,7 @@
 
 import SwiftUI
 import PartialSheet
+import ActivityIndicatorView
 
 struct Home: View {
     
@@ -25,6 +26,7 @@ struct Home: View {
     @State var greeting = "Linkbus"
     
     @State var showingChangeDate = false
+    @State var showLoadingIndicator = true
     
     
     var calendarButton: some View {
@@ -33,10 +35,15 @@ struct Home: View {
             Image(systemName: "calendar")
                 .imageScale(.large)
                 .accessibility(label: Text("Change Date"))
-                .padding()
+//                .padding()
         }
         
         //}.navigationBarTitle("Choose date")
+    }
+    
+    var loadingIndicator: some View {
+        ActivityIndicatorView(isVisible: $routeController.webRequestInProgress, type: .gradient([Color.white, Color.blue]))
+            .frame(width: 19, height: 19)
     }
     
     // init removes seperator/dividers from list, in future maybe use scrollview
@@ -74,7 +81,14 @@ struct Home: View {
                 }
                 .navigationBarTitle(self.menuBarTitle)
                 //.background((colorScheme == .dark ? Color(UIColor.systemBackground) : Color(UIColor.systemGray6)))
-                .navigationBarItems(trailing: calendarButton)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        loadingIndicator
+                    }
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        calendarButton
+                    }
+                }
             }
             else if #available(iOS 14.0, *) { // iOS 14
                 ScrollView {
@@ -84,9 +98,15 @@ struct Home: View {
                 .padding(.top, 0.3) // !! FIXES THE WEIRD NAVIGATION BAR GRAPHICAL GLITCHES WITH SCROLLVIEW IN NAVVIEW - only required in iOS 14
                 .navigationBarTitle(self.menuBarTitle)
                 //.background((colorScheme == .dark ? Color(UIColor.systemBackground) : Color(UIColor.systemGray6)))
-                .navigationBarItems(trailing: calendarButton)
-            }
-            else { // iOS 13
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        loadingIndicator
+                    }
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        calendarButton
+                    }
+                }
+            } else { // iOS 13
                 List {
                     AlertList(routeController: routeController)
                     RouteList(routeController: routeController)

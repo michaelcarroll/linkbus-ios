@@ -47,10 +47,10 @@ struct Routes: View {
         ForEach(routeController.lbBusSchedule.routes) { route in
             if (routeController.localizedDescription == "The Internet connection appears to be offline.") {
                 // TODO: Get rid of the old values like image and price
-                RouteCard(title: route.title, description: route.originLocation, image: Image("Smoothie_Bowl"), price: 15.00, peopleCount: 2, ingredientCount: 2, category: "5 minutes", route: route, routeController: self.routeController, buttonHandler: nil)
+                RouteCard(title: route.title, description: route.originLocation, route: route, routeController: self.routeController)
             }
             else {
-                RouteCard(title: route.title, description: route.originLocation, image: Image("Smoothie_Bowl"), price: 15.00, peopleCount: 2, ingredientCount: 2, category: "5 minutes", route: route, routeController: self.routeController, buttonHandler: nil)
+                RouteCard(title: route.title, description: route.originLocation, route: route, routeController: self.routeController)
             }
         }
         // .hoverEffect(.lift)
