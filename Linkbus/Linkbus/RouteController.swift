@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import SwiftSoup
 
 class RouteController: ObservableObject {
     let CsbsjuApiUrl = "https://apps.csbsju.edu/busschedule/api"
@@ -26,7 +27,7 @@ class RouteController: ObservableObject {
     public var initalWebRequestFinished = false // Used by main view
     public var webRequestIsSlow = false
     
-    private var dailyMessage = ""
+    private var busMessages = [String]()
     private var campusAlert = ""
     private var campusAlertLink = ""
     
@@ -139,7 +140,7 @@ extension RouteController {
             fetchBusMessage { response in
                 DispatchQueue.main.async {
                     if response != nil {
-                        self.dailyMessage = response!
+                        self.busMessages = response!
                     }
                     dispatchGroup.leave()
                 }
@@ -242,7 +243,7 @@ extension RouteController {
      
      - Returns: calls completion handler with bus message as argument or returns nill on error.
      */
-    func fetchBusMessage(completionHandler: @escaping (String?) -> Void) {
+    func fetchBusMessage(completionHandler: @escaping ([String]?) -> Void) {
         let url = URL(string: "https://apps.csbsju.edu/busschedule/default.aspx")
         // Create request
         var request = URLRequest(url: url!)
@@ -290,20 +291,39 @@ extension RouteController {
      
      - Returns: Bus message string or empty string.
      */
-    func processBusMessage(data: Data) -> String {
+    func processBusMessage(data: Data) -> [String] {
         // Use regex to parse HTML for daily message within p tag
+//        print("processBusMessage")
+//        print(data)
         let dataString = String(decoding: data, as: UTF8.self)
-        let pattern = #"TodayMsg"><p>([^<]*)<\/p>"#
-        let regex = try? NSRegularExpression(pattern: pattern)
-        let searchRange = NSRange(location: 0, length: dataString.utf16.count)
-        if let match = regex?.firstMatch(in: dataString, options: [], range: searchRange) {
-            if let secondRange = Range(match.range(at: 1), in: dataString) {
-                let dailyMessage = String(dataString[secondRange])
-                return dailyMessage
+//        let end = dataString.prefix(500)
+        let dataSubString = String(dataString.prefix(500))
+//        print(dataSubString)
+        var busMessages = [String]()
+        do {
+            let doc: Document = try SwiftSoup.parse(dataSubString)
+            let link: Elements = try doc.select("p")
+//            print("OUT:")
+            for element in link {
+                busMessages.append(try element.text())
             }
+        } catch Exception.Error(let type, let message) {
+            print(message)
+        } catch {
+            print("error")
         }
+        return busMessages
+//        let pattern = #"TodayMsg"><p>([^<]*)<\/p>"#
+//        let regex = try? NSRegularExpression(pattern: pattern)
+//        let searchRange = NSRange(location: 0, length: dataString.utf16.count)
+//        if let match = regex?.firstMatch(in: dataString, options: [], range: searchRange) {
+//            if let secondRange = Range(match.range(at: 1), in: dataString) {
+//                let dailyMessage = String(dataString[secondRange])
+//                return dailyMessage
+//            }
+//        }
         // Return empty string if regex does not work
-        return ""
+//        return ""
     }
 
     /**
@@ -474,24 +494,35 @@ extension RouteController {
         if linkbusApiResponse.schoolAlertsSettings.count == 2 {
             // Create alert from bus message
             // Only add alert if message is not empty string and is valid
-            if self.dailyMessage != "" && self.dailyMessage.firstIndex(of: ">") == nil  && self.dailyMessage.firstIndex(of: "<") == nil && self.dailyMessage.count < 300 {
+            if self.busMessages.count > 0 {
                 // Find the setting which has msgId 0 meaning bus message settings
                 let index = linkbusApiResponse.schoolAlertsSettings.firstIndex(where: {$0.msgId == 0})
                 let busMessageSettings = linkbusApiResponse.schoolAlertsSettings[index!]
                 // Only render if active
                 if(busMessageSettings.active) {
-                    // Create alert using website settings
-                    let dailyMessageAlert = Alert(id: busMessageSettings.id, active: busMessageSettings.active, text: self.dailyMessage,
-                                              clickable: busMessageSettings.clickable, action: busMessageSettings.action,
-                                              fullWidth: busMessageSettings.fullWidth, color: busMessageSettings.color,
-                                              rgb: busMessageSettings.rgb, order: busMessageSettings.order)
-                    refreshedLbBusSchedule.alerts.append(dailyMessageAlert)
+                    print("Bus messages:")
+                    var i = 1;
+                    for message in self.busMessages {
+                        print(message)
+                        // Make sure the message has a length greater than 5 and less than 70
+                        if message.count > 10 && message.count < 70 {
+                            // Create alert using website settings
+//                            print(busMessageSettings.id)
+//                            print(busMessageSettings.order)
+                            let dailyMessageAlert = Alert(id: busMessageSettings.id+String(i), active: busMessageSettings.active, text: message,
+                                                      clickable: busMessageSettings.clickable, action: busMessageSettings.action,
+                                                      fullWidth: busMessageSettings.fullWidth, color: busMessageSettings.color,
+                                                      rgb: busMessageSettings.rgb, order: busMessageSettings.order - i)
+                            refreshedLbBusSchedule.alerts.append(dailyMessageAlert)
+                        }
+                        i += 1;
+                    }
                 }
             }
             
             // Create alert from campus alert
             // Only add alert if message is not empty string and is valid
-            if self.campusAlert != "" && self.campusAlert.firstIndex(of: ">") == nil  && self.campusAlert.firstIndex(of: "<") == nil && self.campusAlert.count < 300 {
+            if self.campusAlert != "" && self.campusAlert.firstIndex(of: ">") == nil  && self.campusAlert.firstIndex(of: "<") == nil && self.campusAlert.count < 100 {
                 // Find the setting which has msgId 1 meaning campus alert settings
                 let index = linkbusApiResponse.schoolAlertsSettings.firstIndex(where: {$0.msgId == 1})
                 let campusAlertSettings = linkbusApiResponse.schoolAlertsSettings[index!]
@@ -505,12 +536,15 @@ extension RouteController {
                         clickable = true
                     }
                     // Create alert using website settings
+//                    print(campusAlertSettings.order)
                     let campusAlertAlert = Alert(id: campusAlertSettings.id, active: campusAlertSettings.active, text: self.campusAlert,
                                               clickable: clickable, action: action,
                                               fullWidth: campusAlertSettings.fullWidth, color: campusAlertSettings.color,
                                               rgb: campusAlertSettings.rgb, order: campusAlertSettings.order)
                     refreshedLbBusSchedule.alerts.append(campusAlertAlert)
                 }
+            } else {
+                print("Bad campus alert")
             }
         }
     }
