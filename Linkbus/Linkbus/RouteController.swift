@@ -22,7 +22,7 @@ class RouteController: ObservableObject {
     @Published var deviceOnlineStatus = ""
     @Published var csbsjuApiOnlineStatus = ""
     
-    private var webRequestInProgress = false
+    public var webRequestInProgress = false
     public var initalWebRequestFinished = false // Used by main view
     
     private var dailyMessage = ""

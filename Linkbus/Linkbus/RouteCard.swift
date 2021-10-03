@@ -11,45 +11,26 @@ struct RouteCard: View {
     
     @State var showRouteSheet = false
     
-    var image:Image     // Featured Image
-    var price:Double    // USD
     var title:String    // Product Title
     var description:String // Product Description
-    var ingredientCount:Int // # of Ingredients
-    var peopleCount:Int     // Servings
-    var category:String?    // Optional Category
-    var buttonHandler: (()->())?
+    var route: LbRoute! // Instance of LbRoute to use for this card
+    @ObservedObject var routeController: RouteController
     
     @State var timer = "Now"
-    
-    var route: LbRoute!
     
     @State private var totalHeight
         //      = CGFloat.zero       // << variant for ScrollView/List
         = CGFloat.infinity   // << variant for VStack
     @Environment(\.colorScheme) var colorScheme
     
-    @ObservedObject var routeController: RouteController
-    
-    //var landmark: Landmark
-    
-    init(title:String, description:String, image:Image, price:Double, peopleCount:Int, ingredientCount:Int, category:String?, route:LbRoute, routeController: RouteController, buttonHandler: (()->())?) {
-        
+    init(title:String, description:String, route:LbRoute, routeController: RouteController) {
         self.title = title
         self.description = description
-        self.image = image
-        self.price = price
-        self.peopleCount = peopleCount
-        self.ingredientCount = ingredientCount
-        self.category = category
-        self.buttonHandler = buttonHandler
         self.route = route
         
         self.routeController = routeController
         
         self.timer = "Now"
-        
-        
     }
     
     var body: some View {
@@ -135,34 +116,6 @@ struct RouteCard: View {
                 }
                 .padding([.top, .bottom], 8)
                 
-                
-                
-                //                HStack(alignment: .center, spacing: 4) {
-                //                    Text(String.init(format: "$%.2f", arguments: [self.price]))
-                //                        .fontWeight(Font.Weight.heavy)
-                //                    Text("for 2 people")
-                //                        .font(Font.system(size: 13))
-                //                        .fontWeight(Font.Weight.bold)
-                //                        .foregroundColor(Color.gray)
-                //                    Spacer()
-                //                    Image("Plus-Icon")
-                //                        .resizable()
-                //                        .scaledToFit()
-                //                        .frame(width: 15, height: 15, alignment: .center)
-                //                        .colorMultiply(Color(red: 231/255, green: 119/255, blue: 112/255))
-                //                        .onTapGesture {
-                //                            self.buttonHandler?()
-                //                    }
-                //                    Text("BUY NOW")
-                //                        .fontWeight(Font.Weight.heavy)
-                //                        .foregroundColor(Color(red: 231/255, green: 119/255, blue: 112/255))
-                //                        .onTapGesture {
-                //                            self.buttonHandler?()
-                //                    }
-                //
-                //                }.padding([.top, .bottom], 8)
-                
-                
             }
             
             
@@ -187,80 +140,8 @@ struct RouteCard: View {
     
 }
 
-//    var body: some View {
-//
-//        VStack(alignment: .leading, spacing: 0) {
-//
-//            // Main Featured Image - Upper Half of Card
-//
-//
-//            // Stack bottom half of card
-//            VStack(alignment: .leading, spacing: 6) {
-//                Text(self.title)
-//                    .font(.headline)
-//                    .fontWeight(Font.Weight.heavy)
-//                Text(self.description)
-//                    //.font(Font.custom("HelveticaNeue-Bold", size: 16))
-//                    .font(.subheadline)
-//                    .foregroundColor(Color.gray)
-//
-//                // Horizontal Line separating details and price
-//                Rectangle()
-//                    .foregroundColor(Color.gray.opacity(0.3))
-//                    .frame(width: nil, height: 1, alignment: .center)
-//                    .padding([.leading, .trailing], -12)
-//
-//                // 'Based on:' Horizontal Category Stack
-//                HStack(alignment: .center, spacing: 6) {
-//
-//                    if category != nil {
-//                        Text("Next bus:")
-//                            .font(Font.system(size: 13))
-//                            .fontWeight(Font.Weight.heavy)
-//                        HStack {
-//                            Text(category!)
-//                                .font(Font.custom("SanFrancisco-medium", size: 12))
-//                                .padding([.leading, .trailing], 10)
-//                                .padding([.top, .bottom], 5)
-//                                .foregroundColor(Color.white)
-//                        }
-//                        .background(Color(red: 43/255, green: 175/255, blue: 187/255))
-//                        .cornerRadius(7)
-//                        Spacer()
-//                    }
-//
-////                    HStack(alignment: .center, spacing: 0) {
-////                        Text("")
-////                            .foregroundColor(Color.gray)
-////                        Text("\(self.ingredientCount)")
-////                    }.font(Font.custom("HelveticaNeue", size: 14))
-//
-//
-//                }
-//                .frame(maxHeight: totalHeight) // << variant for VStack
-//                .padding([.top, .bottom], 8)
-//
-//
-//            }
-//            .padding(12)
-//
-//
-//
-//        }
-//
-//            //https://medium.com/@masamichiueta/bridging-uicolor-system-color-to-swiftui-color-ef98f6e21206
-//        .background(Color(UIColor.secondarySystemBackground))
-//        .cornerRadius(15)
-//        .shadow(color: Color.black.opacity(0.2), radius: 7, x: 0, y: 2)
-//        .onTapGesture {
-//            self.showRouteSheet = true
-//        }.sheet(isPresented: $showRouteSheet) {
-//            RouteSheet(route: self.route)
-//        }
-//
-//    }
-//
-//
+// Reference: https://medium.com/@masamichiueta/bridging-uicolor-system-color-to-swiftui-color-ef98f6e21206
+
 
 
 //struct ProductCard_Previews: PreviewProvider {
