@@ -501,7 +501,7 @@ extension RouteController {
                 // Only render if active
                 if(busMessageSettings.active) {
                     print("Bus messages:")
-                    var i = 1;
+                    var i = 0;
                     for message in self.busMessages {
                         print(message)
                         // Make sure the message has a length greater than 5 and less than 70
@@ -512,7 +512,7 @@ extension RouteController {
                             let dailyMessageAlert = Alert(id: busMessageSettings.id+String(i), active: busMessageSettings.active, text: message,
                                                       clickable: busMessageSettings.clickable, action: busMessageSettings.action,
                                                       fullWidth: busMessageSettings.fullWidth, color: busMessageSettings.color,
-                                                      rgb: busMessageSettings.rgb, order: busMessageSettings.order - i)
+                                                      rgb: busMessageSettings.rgb, order: (self.busMessages.count - 1))
                             refreshedLbBusSchedule.alerts.append(dailyMessageAlert)
                         }
                         i += 1;
@@ -522,7 +522,7 @@ extension RouteController {
             
             // Create alert from campus alert
             // Only add alert if message is not empty string and is valid
-            if self.campusAlert != "" && self.campusAlert.firstIndex(of: ">") == nil  && self.campusAlert.firstIndex(of: "<") == nil && self.campusAlert.count < 100 {
+            if self.campusAlert.count > 10 && self.campusAlert.firstIndex(of: ">") == nil  && self.campusAlert.firstIndex(of: "<") == nil && self.campusAlert.count < 100 {
                 // Find the setting which has msgId 1 meaning campus alert settings
                 let index = linkbusApiResponse.schoolAlertsSettings.firstIndex(where: {$0.msgId == 1})
                 let campusAlertSettings = linkbusApiResponse.schoolAlertsSettings[index!]
@@ -540,7 +540,8 @@ extension RouteController {
                     let campusAlertAlert = Alert(id: campusAlertSettings.id, active: campusAlertSettings.active, text: self.campusAlert,
                                               clickable: clickable, action: action,
                                               fullWidth: campusAlertSettings.fullWidth, color: campusAlertSettings.color,
-                                              rgb: campusAlertSettings.rgb, order: campusAlertSettings.order)
+                                              rgb: campusAlertSettings.rgb, order: -5)
+                    // campusAlertSettings.order
                     refreshedLbBusSchedule.alerts.append(campusAlertAlert)
                 }
             } else {
