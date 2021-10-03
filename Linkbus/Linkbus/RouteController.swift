@@ -100,7 +100,7 @@ extension RouteController {
         
         if webRequestInProgress == false {
             // Show the loading indicator after the Linkbus API takes more than 1 second to respond
-            Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false) { timer in
+            Timer.scheduledTimer(withTimeInterval: 2.2, repeats: false) { timer in
                 if self.webRequestInProgress {
                     print("Web request is taking more than a second")
                     self.webRequestIsSlow = true

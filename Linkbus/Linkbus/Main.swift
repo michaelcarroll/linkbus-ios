@@ -148,7 +148,7 @@ struct Home: View {
                 .navigationBarTitle(self.menuBarTitle)
                 //.transition(.opacity)
                 //.background((colorScheme == .dark ? Color(UIColor.systemBackground) : Color(UIColor.systemGray6)))
-                .navigationBarItems(trailing: calendarButton)
+//                .navigationBarItems(trailing: calendarButton)
             }
             //                } else {
             //                    VStack() {
