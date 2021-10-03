@@ -18,6 +18,7 @@ struct Home: View {
     
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
+    @State var popUpText = "Up to date"
     @State private var counter = 0
     @State var showOnboardingSheet = false
     @State var timeOfDay = "default"
@@ -95,8 +96,13 @@ struct Home: View {
                 .popup(isPresented: $webRequestJustFinished, type: .toast, position: .top,
                        animation: .spring(), autohideIn: 3, dragToDismiss: false, closeOnTap: true) {
                     HStack(){
-                        Text("Up to date  🎉")
+                        let delay = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false) { (delay) in
+                            self.popUpText = "Up to date  🎉"
+                        }
+                        Text(self.popUpText)
                             .font(Font.custom("HelveticaNeue", size: 14))
+                            .animation(.default)
+                            .transition(.opacity)
                     }
                         .padding(10)
                         .background(Color.blue)
@@ -124,10 +130,15 @@ struct Home: View {
                     }
                 }
                 .popup(isPresented: $webRequestJustFinished, type: .toast, position: .top,
-                       animation: .spring(), autohideIn: 3, dragToDismiss: true, closeOnTap: true) {
+                       animation: .spring(), autohideIn: 3, dragToDismiss: false, closeOnTap: true) {
                     HStack(){
-                        Text("Up to date  🎉")
+                        let delay = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false) { (delay) in
+                            self.popUpText = "Up to date  🎉"
+                        }
+                        Text(self.popUpText)
                             .font(Font.custom("HelveticaNeue", size: 14))
+                            .animation(.default)
+                            .transition(.opacity)
                     }
                         .padding(10)
                         .background(Color.blue)
@@ -251,13 +262,16 @@ func titleGreeting(self: Home) {
     let currentDate = Date()
     let calendar = Calendar(identifier: .gregorian)
     let hour = calendar.component(.hour, from: currentDate)
-    let component = calendar.dateComponents([.weekday], from: currentDate)
+    let component = calendar.dateComponents([.month, .weekday], from: currentDate)
     
     var newTimeOfDay: String
     var timeOfDayChanged = false
     
-    if (hour < 6) {
+    if (hour < 2) {
         newTimeOfDay = "night"
+    }
+    else if (hour < 6) {
+        newTimeOfDay = "late night"
     }
     else if (hour < 12) {
         newTimeOfDay = "morning"
@@ -275,7 +289,11 @@ func titleGreeting(self: Home) {
     
     if (timeOfDayChanged) {
         if (self.timeOfDay == "night") {
-            let nightGreetings = ["Goodnight 😴", "Buenas noches 😴", "Goodnight 😴", "Goodnight 🌌", "Goodnight 😴", "Goodnight 🌌", "You up? 😏💤"]
+            let nightGreetings = ["Goodnight 😴", "Buenas noches 😴", "Goodnight 😴", "Goodnight 🌌", "Goodnight 😴", "Goodnight 🌌", "Goodnight 🌌"]
+            let randomGreeting = nightGreetings.randomElement()
+            self.greeting = randomGreeting!
+        } else if (self.timeOfDay == "late night") {
+            let nightGreetings = ["Goodnight 😴", "Buenas noches 😴", "Goodnight 😴", "Goodnight 🌌", "Goodnight 😴", "You up? 😏💤", "You up? 😏💤"]
             let randomGreeting = nightGreetings.randomElement()
             self.greeting = randomGreeting!
         } else if (self.timeOfDay == "morning") {
@@ -285,6 +303,14 @@ func titleGreeting(self: Home) {
                 self.greeting = randomGreeting!
             } else if (component.weekday == 6) {
                 let morningGreetings = ["Good morning 🌅", "Bonjour 🌅", "Happy Friday 🌅", "Happy Friday 🌅", "Happy Friday 🌅", "Good morning 🌅", "Good morning 🌅", "Good morning 🌅", "Buenos días 🌅"]
+                let randomGreeting = morningGreetings.randomElement()
+                self.greeting = randomGreeting!
+            } else if (component.month == 10) {
+                let morningGreetings = ["Good morning 🌅", "Bonjour 🌅", "Buenos días 🌅", "Good morning 🍁", "Good morning 🍁", "Good morning 🍁"]
+                let randomGreeting = morningGreetings.randomElement()
+                self.greeting = randomGreeting!
+            } else if (component.month == 12) {
+                let morningGreetings = ["Good morning 🌅", "Bonjour 🌅", "Buenos días 🌅", "Good morning ❄️", "Good morning ❄️", "Good morning ❄️"]
                 let randomGreeting = morningGreetings.randomElement()
                 self.greeting = randomGreeting!
             } else {
@@ -318,6 +344,7 @@ func autoRefreshData(self: Home) {
         if elapsed > 61 { // only show popUp if seconds elapsed since lastRefreshTime > 61s (app was in background - otherwise will always be 60)
             if self.routeController.deviceOnlineStatus != "offline" {
                 print("Pop up")
+                self.popUpText = "Up to date" // reset (remove emoji)
                 self.webRequestJustFinished = true
             }
         }
