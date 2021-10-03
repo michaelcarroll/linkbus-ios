@@ -29,7 +29,7 @@ struct Home: View {
     @State var showingChangeDate = false
     
     @State var webRequestJustFinished = false
-    @State var lastRefreshTime = Date().timeIntervalSince1970
+    @State var lastRefreshTime = Date()
     
     
     var calendarButton: some View {
@@ -95,12 +95,14 @@ struct Home: View {
                 .popup(isPresented: $webRequestJustFinished, type: .toast, position: .top,
                        animation: .spring(), autohideIn: 3, dragToDismiss: false, closeOnTap: true) {
                     HStack(){
-                        Text("Up to date ✅")
+                        Text("Up to date  🎉")
                             .font(Font.custom("HelveticaNeue", size: 14))
                     }
                         .padding(10)
-                        .background(Color(red: 46 / 256, green: 98 / 256, blue: 158 / 256))
-                        .foregroundColor(Color(red: 244 / 256, green: 247 / 256, blue: 250 / 256))
+                        .background(Color.blue)
+                        .foregroundColor(Color.white)
+                        //.background(colorScheme == .dark ? Color(UIColor.secondarySystemBackground) : Color(UIColor.secondarySystemBackground))
+                        //.foregroundColor(colorScheme == .dark ? Color.white : Color.black)
                         .cornerRadius(18.0)
                         .padding(50)
                 }
@@ -124,12 +126,14 @@ struct Home: View {
                 .popup(isPresented: $webRequestJustFinished, type: .toast, position: .top,
                        animation: .spring(), autohideIn: 3, dragToDismiss: true, closeOnTap: true) {
                     HStack(){
-                        Text("Up to date ✅")
+                        Text("Up to date  🎉")
                             .font(Font.custom("HelveticaNeue", size: 14))
                     }
                         .padding(10)
-                        .background(Color(red: 46 / 256, green: 98 / 256, blue: 158 / 256))
-                        .foregroundColor(Color(red: 244 / 256, green: 247 / 256, blue: 250 / 256))
+                        .background(Color.blue)
+                        .foregroundColor(Color.white)
+                        //.background(colorScheme == .dark ? Color(UIColor.secondarySystemBackground) : Color(UIColor.secondarySystemBackground))
+                        //.foregroundColor(colorScheme == .dark ? Color.white : Color.black)
                         .cornerRadius(18.0)
                         .padding(50)
                 }
@@ -271,7 +275,7 @@ func titleGreeting(self: Home) {
     
     if (timeOfDayChanged) {
         if (self.timeOfDay == "night") {
-            let nightGreetings = ["Goodnight 😴", "Buenas noches 😴", "Goodnight 😴", "Goodnight 🌌", "Goodnight 😴", "You up? 😏💤", "You up? 😏💤"]
+            let nightGreetings = ["Goodnight 😴", "Buenas noches 😴", "Goodnight 😴", "Goodnight 🌌", "Goodnight 😴", "Goodnight 🌌", "You up? 😏💤"]
             let randomGreeting = nightGreetings.randomElement()
             self.greeting = randomGreeting!
         } else if (self.timeOfDay == "morning") {
@@ -290,7 +294,7 @@ func titleGreeting(self: Home) {
             }
         } else if (self.timeOfDay == "afternoon") {
             self.greeting = "Good afternoon ☀️"
-        } else if (self.timeOfDay == "evening") { // < 24 , self.timeOfDay = evening
+        } else if (self.timeOfDay == "evening") { // < 24
             let eveningGreetings = ["Good evening 🌙", "Good evening 🌙", "Good evening 🌙", "Good evening 🌙"]
             let randomGreeting = eveningGreetings.randomElement()
             self.greeting = randomGreeting!
@@ -310,15 +314,15 @@ func autoRefreshData(self: Home) {
     if self.lastRefreshTimeString != currentTime {
         print("Refreshing data")
         self.routeController.webRequest()
-        self.lastRefreshTimeString = currentTime
-        // 120 seconds have passed
-        if self.lastRefreshTime + 120 < Date().timeIntervalSince1970 {
+        let elapsed = Date().timeIntervalSince(self.lastRefreshTime)
+        if elapsed > 61 { // only show popUp if seconds elapsed since lastRefreshTime > 61s (app was in background - otherwise will always be 60)
             if self.routeController.deviceOnlineStatus != "offline" {
                 print("Pop up")
                 self.webRequestJustFinished = true
             }
-            self.lastRefreshTime = Date().timeIntervalSince1970
         }
+        self.lastRefreshTimeString = currentTime
+        self.lastRefreshTime = time
     }
 }
 
