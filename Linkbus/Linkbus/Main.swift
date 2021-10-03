@@ -44,8 +44,13 @@ struct Home: View {
         self.routeController = RouteController()
         //UINavigationBar.appearance().backgroundColor = .systemGroupedBackground // currently impossible to change background color with navigationview, in future swiftui use .systemGroupedBackground
         
-        
+        // attempt to animate navbar title transition: 
+//        let fadeTextAnimation = CATransition()
+//        fadeTextAnimation.duration = 0.5
+//        fadeTextAnimation.type = .fade
+//        UINavigationBar.appearance().layer.add(fadeTextAnimation, forKey: "fadeText")
         //UINavigationBar.setAnimationsEnabled(true)
+        
         UITableView.appearance().separatorStyle = .none
         
         //        UITableView.appearance().backgroundColor = (colorScheme == .dark ? .white : .black)
@@ -62,16 +67,26 @@ struct Home: View {
     
     var body: some View {
         NavigationView {
-            if #available(iOS 14.0, *) { // iOS 14
+            if #available(iOS 15.0, *) { // iOS 15
                 ScrollView {
                     AlertList(routeController: routeController)
                     RouteList(routeController: routeController)
                 }
-                .padding(.top, 0.3) // !! FIXES THE WEIRD NAVIGATION BAR GRAPHICAL GLITCHES WITH SCROLLVIEW IN NAVVIEW
                 .navigationBarTitle(self.menuBarTitle)
                 //.background((colorScheme == .dark ? Color(UIColor.systemBackground) : Color(UIColor.systemGray6)))
                 .navigationBarItems(trailing: calendarButton)
-            } else { // iOS 13
+            }
+            else if #available(iOS 14.0, *) { // iOS 14
+                ScrollView {
+                    AlertList(routeController: routeController)
+                    RouteList(routeController: routeController)
+                }
+                .padding(.top, 0.3) // !! FIXES THE WEIRD NAVIGATION BAR GRAPHICAL GLITCHES WITH SCROLLVIEW IN NAVVIEW - only required in iOS 14
+                .navigationBarTitle(self.menuBarTitle)
+                //.background((colorScheme == .dark ? Color(UIColor.systemBackground) : Color(UIColor.systemGray6)))
+                .navigationBarItems(trailing: calendarButton)
+            }
+            else { // iOS 13
                 List {
                     AlertList(routeController: routeController)
                     RouteList(routeController: routeController)
@@ -111,7 +126,7 @@ struct Home: View {
             style: PartialSheetStyle(
                 background: (colorScheme == .dark ? .blur(UIBlurEffect.Style.prominent) : .blur(UIBlurEffect.Style.prominent)),
                 //background: .solid(Color(UIColor.secondarySystemBackground)),
-                handlerBarColor: Color(UIColor.systemGray2),
+                accentColor: Color(UIColor.systemGray2),
                 enableCover: true,
                 coverColor: Color.black.opacity(0.4),
                 blurEffectStyle: .dark,
@@ -237,7 +252,8 @@ func titleGreeting(self: Home) {
 func autoRefreshData(self: Home) {
     let time = Date()
     let timeFormatter = DateFormatter()
-    timeFormatter.dateFormat = "HH:mm"
+    //timeFormatter.dateFormat = "HH:mm"
+    timeFormatter.dateFormat = "MM/dd/yyyy HH:mm"
     let currentTime = timeFormatter.string(from: time)
     //                print("last ref: " + self.lastRefreshTime)
     //                print("current time: " + currentTime)

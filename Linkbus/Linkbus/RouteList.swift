@@ -18,7 +18,7 @@ struct RouteList: View {
     
     var body: some View {
         if #available(iOS 14.0, *) {
-            LazyVStack (alignment: .leading, spacing: 12) {
+            VStack (alignment: .leading, spacing: 12) {
                 Routes(routeController: self.routeController)
             }
             .padding(.horizontal, 12)
