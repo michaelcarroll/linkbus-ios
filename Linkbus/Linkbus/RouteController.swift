@@ -40,7 +40,6 @@ class RouteController: ObservableObject {
 }
 
 extension RouteController {
-    
     /**
      Changes the selected date. Called when the date is changed on the select date view.
      */
@@ -48,13 +47,12 @@ extension RouteController {
         let isSelectedDateToday = Calendar.current.isDateInToday(selectedDate)
         if isSelectedDateToday {
             resetDate()
-        }
-        else {
-        self.selectedDate = selectedDate
-        print(selectedDate)
-        self.dateIsChanged = true
-        self.lbBusSchedule = LbBusSchedule(msg: "", attention: "", alerts: [Alert](), routes: [LbRoute]()) // see below
-        webRequest() // doing a full webRequest here so that it clears the arrays, if it doesn't the animation is not smooth when switching dates. Also the extra time a full webRequest takes makes the animation more pleasant... although caching while switching days can also ruin the animation
+        } else {
+            self.selectedDate = selectedDate
+            print(selectedDate)
+            self.dateIsChanged = true
+            self.lbBusSchedule = LbBusSchedule(msg: "", attention: "", alerts: [Alert](), routes: [LbRoute]()) // see below
+            webRequest() // doing a full webRequest here so that it clears the arrays, if it doesn't the animation is not smooth when switching dates. Also the extra time a full webRequest takes makes the animation more pleasant... although caching while switching days can also ruin the animation
         }
     }
     
@@ -63,11 +61,11 @@ extension RouteController {
      */
     func resetDate() {
         if self.dateIsChanged {
+            dateIsChanged = false
             self.lbBusSchedule.routes = []
             self.selectedDate = Date()
             self.lbBusSchedule = LbBusSchedule(msg: "", attention: "", alerts: [Alert](), routes: [LbRoute]())
             webRequest()
-            dateIsChanged = false
         }
     }
     
@@ -97,7 +95,6 @@ extension RouteController {
     }
     
     func webRequest() {
-        
         if webRequestInProgress == false {
             // Show the loading indicator after the Linkbus API takes more than 1 second to respond
             Timer.scheduledTimer(withTimeInterval: 2.2, repeats: false) { timer in
@@ -172,7 +169,6 @@ extension RouteController {
                 self.processRoutesAndAlerts()
             }
         }
-        
     }
     
     func fetchCsbsjuApi(completionHandler: @escaping (BusSchedule?) -> Void) {
@@ -187,6 +183,7 @@ extension RouteController {
         } else {
             urlString = CsbsjuApiUrl
         }
+        print("Linkbus API URL: " + urlString)
         let url = URL(string: urlString)!
         
         let task = URLSession.shared.dataTask(with: url, completionHandler: { (data, response, error) in
