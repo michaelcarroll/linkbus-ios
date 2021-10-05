@@ -15,6 +15,7 @@ class RouteController: ObservableObject {
     //let LinkbusApiUrl = "https://us-central1-linkbus-website-development.cloudfunctions.net/api" // Development API
     
     var csbsjuApiResponse = BusSchedule(msg: "", attention: "", routes: [Route]())
+    var csbsjuApiResponseYesterday = BusSchedule(msg: "", attention: "", routes: [Route]())
     var linkbusApiResponse = LinkbusApi(alerts: [Alert](), routes: [RouteDetail](), schoolAlertsSettings: [SchoolAlertsSettings]())
     
     @Published var lbBusSchedule = LbBusSchedule(msg: "", attention: "", alerts: [Alert](), routes: [LbRoute]())
@@ -96,6 +97,7 @@ extension RouteController {
     
     func webRequest() {
         if webRequestInProgress == false {
+            let startTime = NSDate().timeIntervalSince1970
             // Show the loading indicator after the Linkbus API takes more than 1 second to respond
             Timer.scheduledTimer(withTimeInterval: 2.2, repeats: false) { timer in
                 if self.webRequestInProgress {
@@ -121,24 +123,43 @@ extension RouteController {
             dispatchGroup.enter()
             fetchCsbsjuApi { apiResponse in
                 DispatchQueue.main.async {
+                    print("webRequest(): fetchCsbsjuApi finished")
                     if apiResponse != nil {
                         self.csbsjuApiResponse = apiResponse!
                         self.csbsjuApiOnlineStatus = "online"
                     } else {
                         self.csbsjuApiOnlineStatus = "CsbsjuApi invalid response"
                     }
+                    print(NSString(format:"webRequest(): fetchCsbsjuApi took %.4f seconds", NSDate().timeIntervalSince1970 - startTime))
                     dispatchGroup.leave()
                 }
             }
+            // CSBSJU API (Yesterday's routes)
+            dispatchGroup.enter()
+            fetchCsbsjuApi(completionHandler: { apiResponse in
+                DispatchQueue.main.async {
+                    print("webRequest(): fetchCsbsjuApi finished")
+                    if apiResponse != nil {
+                        self.csbsjuApiResponseYesterday = apiResponse!
+                        self.csbsjuApiOnlineStatus = "online"
+                    } else {
+                        self.csbsjuApiOnlineStatus = "CsbsjuApi invalid response"
+                    }
+                    print(NSString(format:"webRequest(): fetchCsbsjuApi for yesterday took %.4f seconds", NSDate().timeIntervalSince1970 - startTime))
+                    dispatchGroup.leave()
+                }
+            }, yesterdaysRoutes: true)
             
             // Daily message alert
             // Website does not always have a message
             dispatchGroup.enter()
             fetchBusMessage { response in
                 DispatchQueue.main.async {
+                    print("webRequest(): fetchBusMessage finished")
                     if response != nil {
                         self.busMessages = response!
                     }
+                    print(NSString(format:"webRequest(): fetchBusMessage took %.4f seconds", NSDate().timeIntervalSince1970 - startTime))
                     dispatchGroup.leave()
                 }
             }
@@ -147,9 +168,11 @@ extension RouteController {
             dispatchGroup.enter()
             fetchCampusAlert { response in
                 DispatchQueue.main.async {
+                    print("webRequest(): fetchCampusAlert finished")
                     if response != nil {
                         self.processCampusAlert(data: response!)
                     }
+                    print(NSString(format:"webRequest(): fetchCampusAlert took %.4f seconds", NSDate().timeIntervalSince1970 - startTime))
                     dispatchGroup.leave()
                 }
             }
@@ -158,32 +181,45 @@ extension RouteController {
             dispatchGroup.enter()
             fetchLinkbusApi { apiResponse in
                 DispatchQueue.main.async {
+                    print("webRequest(): fetchLinkbusApi finished")
                     if apiResponse != nil {
                         self.linkbusApiResponse = apiResponse!
                     }
+                    print(NSString(format:"webRequest(): fetchLinkbusApi took %.4f seconds", NSDate().timeIntervalSince1970 - startTime))
                     dispatchGroup.leave()
                 }
             }
             
             dispatchGroup.notify(queue: .main) {
                 self.processRoutesAndAlerts()
+                print("webRequest(): processRoutesAndAlerts finished")
+                print(NSString(format:"webRequest(): Web requests took %.4f seconds", NSDate().timeIntervalSince1970 - startTime))
             }
+            
         }
     }
     
-    func fetchCsbsjuApi(completionHandler: @escaping (BusSchedule?) -> Void) {
+    func fetchCsbsjuApi(completionHandler: @escaping (BusSchedule?) -> Void, yesterdaysRoutes: Bool = false) {
         var urlString = ""
         if self.dateIsChanged {
             // Format date object into string e.g. 10/23/20
             let formatter = DateFormatter()
             formatter.dateStyle = .short
-            let formattedDate = formatter.string(from: selectedDate)
+            let formattedDate = formatter.string(from: self.selectedDate)
             // Add date to URL
             urlString = CsbsjuApiUrl + "?date=" + formattedDate
         } else {
             urlString = CsbsjuApiUrl
+            if yesterdaysRoutes {
+                let yesterdaysDate = Calendar.current.date(byAdding: .day, value: -1, to: Date())!
+                let formatter = DateFormatter()
+                formatter.dateStyle = .short
+                let formattedDate = formatter.string(from: yesterdaysDate)
+                // Add date to URL
+                urlString = CsbsjuApiUrl + "?date=" + formattedDate
+            }
         }
-        print("Linkbus API URL: " + urlString)
+        print("fetchCsbsjuApi(): Linkbus API URL: " + urlString)
         let url = URL(string: urlString)!
         
         let task = URLSession.shared.dataTask(with: url, completionHandler: { (data, response, error) in
@@ -302,7 +338,10 @@ extension RouteController {
             let link: Elements = try doc.select("p")
 //            print("OUT:")
             for element in link {
-                busMessages.append(try element.text())
+                let text = try element.text()
+                if text.count > 0 {
+                    busMessages.append(text)
+                }
             }
         } catch Exception.Error(let type, let message) {
             print(message)
@@ -336,7 +375,7 @@ extension RouteController {
         // Create url session to send request
         let task = URLSession.shared.dataTask(with: request, completionHandler: { (data, response, error) in
             if let error = error {
-                print("Error with fetching daily message: \(error)")
+                print("Error fetching campus alert: \(error)")
                 return
             }
             guard let httpResponse = response as? HTTPURLResponse,
@@ -349,7 +388,7 @@ extension RouteController {
                 }
                 return
             }
-            // Process HTML into data we care about, the "daily message"
+            // Process HTML into data we care about, the "campus alert"
             completionHandler(data)
         })
         task.resume()
@@ -497,10 +536,10 @@ extension RouteController {
                 let busMessageSettings = linkbusApiResponse.schoolAlertsSettings[index!]
                 // Only render if active
                 if(busMessageSettings.active) {
-                    print("Bus messages:")
+                    print("addSchoolMessageAlerts(): Bus messages:")
                     var i = 0;
                     for message in self.busMessages {
-                        print(message)
+                        print(NSString(format: "addSchoolMessageAlerts(): Message %d: %@", i+1, message))
                         // Make sure the message has a length greater than 5 and less than 70
                         if message.count > 10 && message.count < 70 {
                             // Create alert using website settings
@@ -511,6 +550,8 @@ extension RouteController {
                                                       fullWidth: busMessageSettings.fullWidth, color: busMessageSettings.color,
                                                       rgb: busMessageSettings.rgb, order: (self.busMessages.count - 1))
                             refreshedLbBusSchedule.alerts.append(dailyMessageAlert)
+                        } else {
+                            print(NSString(format: "addSchoolMessageAlerts(): Bad bus message: %@", message))
                         }
                         i += 1;
                     }
@@ -542,7 +583,7 @@ extension RouteController {
                     refreshedLbBusSchedule.alerts.append(campusAlertAlert)
                 }
             } else {
-                print("Bad campus alert")
+                print(NSString(format: "addSchoolMessageAlerts(): Bad campus alert: %@", self.campusAlert))
             }
         }
     }
@@ -552,130 +593,132 @@ extension RouteController {
      */
     func processRoutes() {
 //        print("processRoutes")
-        if (!csbsjuApiResponse.routes!.isEmpty) {
-            for apiRoute in csbsjuApiResponse.routes! {
-                var tempRoute = LbRoute(id: 0, title: "", times: [LbTime](), nextBusTimer: "", origin: "", originLocation: "", destination: "", destinationLocation: "", city: "", state: "", coordinates: Coordinates(longitude: 0, latitude: 0))
-                tempRoute.id = apiRoute.id!
-                tempRoute.title = apiRoute.title!
-                var tempTimes = [LbTime]()
-                
-                var tempId = 0
-                for apiTime in apiRoute.times! {
-                    // process new time structure
-                    if (apiTime.start != "") {
-                        // There two aren't being used
-                        let isoStartDate = apiTime.start
-                        let isoEndDate = apiTime.end
-                        let dateFormatter = DateFormatter()
-                        dateFormatter.dateFormat = "MM/dd/yyyy h:mm:ss a"
-                        dateFormatter.timeZone = TimeZone(identifier: "America/Central")
-                        dateFormatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
-                        let startDate = dateFormatter.date(from:isoStartDate!)!
-                        let endDate = dateFormatter.date(from:isoEndDate!)!
-                        
-                        // current time - 1 min so that a bus at 5:30:00 still appears in app if currentTime is 5:30:01
-                        let calendar = Calendar.current
-                        let date = Date()
-                        let currentDate = calendar.date(byAdding: .minute, value: -1, to: date)
-                        if (endDate >= currentDate!) { // make sure end date is not in the past, if true skip add
+        for routeType in [csbsjuApiResponse, csbsjuApiResponseYesterday] {
+            if (!routeType.routes!.isEmpty) {
+                for apiRoute in routeType.routes! {
+                    var tempRoute = LbRoute(id: 0, title: "", times: [LbTime](), nextBusTimer: "", origin: "", originLocation: "", destination: "", destinationLocation: "", city: "", state: "", coordinates: Coordinates(longitude: 0, latitude: 0))
+                    tempRoute.id = apiRoute.id!
+                    tempRoute.title = apiRoute.title!
+                    var tempTimes = [LbTime]()
+                    
+                    var tempId = 0
+                    for apiTime in apiRoute.times! {
+                        // process new time structure
+                        if (apiTime.start != "") {
+                            // There two aren't being used
+                            let isoStartDate = apiTime.start
+                            let isoEndDate = apiTime.end
+                            let dateFormatter = DateFormatter()
+                            dateFormatter.dateFormat = "MM/dd/yyyy h:mm:ss a"
+                            dateFormatter.timeZone = TimeZone(identifier: "America/Central")
+                            dateFormatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
+                            let startDate = dateFormatter.date(from:isoStartDate!)!
+                            let endDate = dateFormatter.date(from:isoEndDate!)!
                             
-                            var current = false
-                            if (startDate <= Date()) {
-                                current = true
+                            // current time - 1 min so that a bus at 5:30:00 still appears in app if currentTime is 5:30:01
+                            let calendar = Calendar.current
+                            let date = Date()
+                            let currentDate = calendar.date(byAdding: .minute, value: -1, to: date)
+                            if (endDate >= currentDate!) { // make sure end date is not in the past, if true skip add
+                                
+                                var current = false
+                                if (startDate <= Date()) {
+                                    current = true
+                                }
+                                
+                                let textFormatter = DateFormatter()
+                                textFormatter.dateFormat = "h:mm a"
+                                
+                                let timeString: String = (textFormatter.string(from: startDate) + " - " + (textFormatter.string(from: endDate)))
+                                
+                                tempId+=1
+                                tempTimes.append(LbTime(id: tempId, startDate: startDate, endDate: endDate, timeString: timeString, hasStart: true, lastBusClass: apiTime.lbc!, ss: apiTime.ss!, current: current))
                             }
+                        } else {
+                            let isoDate = apiTime.end
+                            let dateFormatter = DateFormatter()
+                            dateFormatter.dateFormat = "MM/dd/yyyy h:mm:ss a"
+                            dateFormatter.timeZone = TimeZone(identifier: "America/Central")
+                            dateFormatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
+                            let endDate = dateFormatter.date(from:isoDate!)!
+                            let startDate = endDate
                             
-                            let textFormatter = DateFormatter()
-                            textFormatter.dateFormat = "h:mm a"
+                            // current time + 1 min so that a bus at 5:30:00 still appears in app if currentTime is 5:30:01
+                            let calendar = Calendar.current
+                            let date = Date()
+                            let currentDate = calendar.date(byAdding: .minute, value: -1, to: date)
                             
-                            let timeString: String = (textFormatter.string(from: startDate) + " - " + (textFormatter.string(from: endDate)))
-                            
-                            tempId+=1
-                            tempTimes.append(LbTime(id: tempId, startDate: startDate, endDate: endDate, timeString: timeString, hasStart: true, lastBusClass: apiTime.lbc!, ss: apiTime.ss!, current: current))
-                        }
-                    } else {
-                        let isoDate = apiTime.end
-                        let dateFormatter = DateFormatter()
-                        dateFormatter.dateFormat = "MM/dd/yyyy h:mm:ss a"
-                        dateFormatter.timeZone = TimeZone(identifier: "America/Central")
-                        dateFormatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
-                        let endDate = dateFormatter.date(from:isoDate!)!
-                        let startDate = endDate
-                        
-                        // current time + 1 min so that a bus at 5:30:00 still appears in app if currentTime is 5:30:01
-                        let calendar = Calendar.current
-                        let date = Date()
-                        let currentDate = calendar.date(byAdding: .minute, value: -1, to: date)
-                        
-                        if (endDate >= currentDate!) { // make sure end date is not in the past, if true skip add
-                            
-                            var current = false
-                            if (startDate <= Date()) {
-                                current = true
+                            if (endDate >= currentDate!) { // make sure end date is not in the past, if true skip add
+                                
+                                var current = false
+                                if (startDate <= Date()) {
+                                    current = true
+                                }
+                                
+                                let textFormatter = DateFormatter()
+                                textFormatter.dateFormat = "h:mm a"
+                                
+                                let timeString: String = (textFormatter.string(from: endDate))
+                                
+                                
+                                tempId+=1
+                                tempTimes.append(LbTime(id: tempId, startDate: startDate, endDate: endDate, timeString: timeString, hasStart: false, lastBusClass: apiTime.lbc!, ss: apiTime.ss!, current: current))
                             }
-                            
-                            let textFormatter = DateFormatter()
-                            textFormatter.dateFormat = "h:mm a"
-                            
-                            let timeString: String = (textFormatter.string(from: endDate))
-                            
-                            
-                            tempId+=1
-                            tempTimes.append(LbTime(id: tempId, startDate: startDate, endDate: endDate, timeString: timeString, hasStart: false, lastBusClass: apiTime.lbc!, ss: apiTime.ss!, current: current))
                         }
                     }
-                }
-                
-                if (tempTimes.count > 0) {
                     
-                    tempRoute.times = tempTimes
-                    
-                    // TODO: add in Linkbus API route data
-                    if let i = linkbusApiResponse.routes.firstIndex(where: {$0.routeId == tempRoute.id}) {
-                        tempRoute.origin = linkbusApiResponse.routes[i].origin
-                        tempRoute.originLocation = linkbusApiResponse.routes[i].originLocation
-                        tempRoute.destination = linkbusApiResponse.routes[i].destination
-                        tempRoute.destinationLocation = linkbusApiResponse.routes[i].destinationLocation
-                        tempRoute.city = linkbusApiResponse.routes[i].city
-                        tempRoute.state = linkbusApiResponse.routes[i].state
-                        tempRoute.coordinates = linkbusApiResponse.routes[i].coordinates
+                    if (tempTimes.count > 0) {
+                        
+                        tempRoute.times = tempTimes
+                        
+                        // TODO: add in Linkbus API route data
+                        if let i = linkbusApiResponse.routes.firstIndex(where: {$0.routeId == tempRoute.id}) {
+                            tempRoute.origin = linkbusApiResponse.routes[i].origin
+                            tempRoute.originLocation = linkbusApiResponse.routes[i].originLocation
+                            tempRoute.destination = linkbusApiResponse.routes[i].destination
+                            tempRoute.destinationLocation = linkbusApiResponse.routes[i].destinationLocation
+                            tempRoute.city = linkbusApiResponse.routes[i].city
+                            tempRoute.state = linkbusApiResponse.routes[i].state
+                            tempRoute.coordinates = linkbusApiResponse.routes[i].coordinates
+                        }
+    //                    print(linkbusApiResponse.routes)
+                        
+                        // next bus timer logic:
+                        
+                        let nextBusStart = tempRoute.times[0].startDate
+                        let nextBusEnd = tempRoute.times[0].endDate
+                        
+                        //https://stackoverflow.com/a/41640902
+                        let formatter = DateComponentsFormatter()
+                        formatter.unitsStyle = .full
+                        formatter.allowedUnits = [.month, .day, .hour, .minute]
+                        formatter.maximumUnitCount = 2   // often, you don't care about seconds if the elapsed time is in months, so you'll set max unit to whatever is appropriate in your case
+                        let timeDifference = formatter.string(from: Date(), to: nextBusStart.addingTimeInterval(60))! //adds 60 seconds to round up
+                        var nextBusTimer: String
+                        
+                        if (nextBusStart != nextBusEnd) && (Date() > nextBusStart) && (Date() < nextBusEnd) { // in a range
+                            //                    if Date() >= nextBusEnd {
+                            //                        nextBusTimer = "Departing now"
+                            //                    }
+                            //else {
+                            let dateFormatter = DateFormatter()
+                            dateFormatter.dateFormat = "h:mm a"
+                            dateFormatter.timeZone = TimeZone(identifier: "America/Central")
+                            dateFormatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
+                            let nextBusTime = dateFormatter.string(from: nextBusEnd)
+                            nextBusTimer = "Now until " + nextBusTime
+                            //}
+                        }
+                        else if (timeDifference == "0 minutes" || Date() >= nextBusEnd) {
+                            nextBusTimer = "Departing now"
+                        }
+                        else { // no range
+                            nextBusTimer = timeDifference
+                        }
+                        tempRoute.nextBusTimer = nextBusTimer
+                        
+                        refreshedLbBusSchedule.routes.append(tempRoute)
                     }
-//                    print(linkbusApiResponse.routes)
-                    
-                    // next bus timer logic:
-                    
-                    let nextBusStart = tempRoute.times[0].startDate
-                    let nextBusEnd = tempRoute.times[0].endDate
-                    
-                    //https://stackoverflow.com/a/41640902
-                    let formatter = DateComponentsFormatter()
-                    formatter.unitsStyle = .full
-                    formatter.allowedUnits = [.month, .day, .hour, .minute]
-                    formatter.maximumUnitCount = 2   // often, you don't care about seconds if the elapsed time is in months, so you'll set max unit to whatever is appropriate in your case
-                    let timeDifference = formatter.string(from: Date(), to: nextBusStart.addingTimeInterval(60))! //adds 60 seconds to round up
-                    var nextBusTimer: String
-                    
-                    if (nextBusStart != nextBusEnd) && (Date() > nextBusStart) && (Date() < nextBusEnd) { // in a range
-                        //                    if Date() >= nextBusEnd {
-                        //                        nextBusTimer = "Departing now"
-                        //                    }
-                        //else {
-                        let dateFormatter = DateFormatter()
-                        dateFormatter.dateFormat = "h:mm a"
-                        dateFormatter.timeZone = TimeZone(identifier: "America/Central")
-                        dateFormatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
-                        let nextBusTime = dateFormatter.string(from: nextBusEnd)
-                        nextBusTimer = "Now until " + nextBusTime
-                        //}
-                    }
-                    else if (timeDifference == "0 minutes" || Date() >= nextBusEnd) {
-                        nextBusTimer = "Departing now"
-                    }
-                    else { // no range
-                        nextBusTimer = timeDifference
-                    }
-                    tempRoute.nextBusTimer = nextBusTimer
-                    
-                    refreshedLbBusSchedule.routes.append(tempRoute)
                 }
             }
         }

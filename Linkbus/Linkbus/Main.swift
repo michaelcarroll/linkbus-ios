@@ -68,12 +68,10 @@ struct Home: View {
         //        UITableViewCell.appearance().backgroundColor = .clear
         //        UINavigationBar.appearance().backgroundColor = (colorScheme == .dark ? .white : .black)
         //        print(colorScheme)
-        
-        let time = Date()
         let timeFormatter = DateFormatter()
-        timeFormatter.dateFormat = "HH:mm"
-        //self.lastRefreshTime = timeFormatter.string(from: time)
-        _lastRefreshTimeString = State(initialValue: timeFormatter.string(from: time))
+        timeFormatter.dateFormat = "MM/dd/yyyy HH:mm"
+        let currentTime = timeFormatter.string(from: Date())
+        _lastRefreshTimeString = State(initialValue: currentTime)
     }
     
     var body: some View {
@@ -337,13 +335,14 @@ func autoRefreshData(self: Home) {
     //                print("last ref: " + self.lastRefreshTime)
     //                print("current time: " + currentTime)
     //                print("local desc: " + routeController.localizedDescription
-    if self.lastRefreshTimeString != currentTime {
-        print("Refreshing data")
+    if self.routeController.initalWebRequestFinished && self.lastRefreshTimeString != currentTime {
+        print("autoRefreshData(): Refreshing data")
+        print(NSString(format: "autoRefreshData(): Times changed: %@ != %@", self.lastRefreshTimeString, currentTime))
         self.routeController.webRequest()
         let elapsed = Date().timeIntervalSince(self.lastRefreshTime)
         if elapsed > 61 { // only show popUp if seconds elapsed since lastRefreshTime > 61s (app was in background - otherwise will always be 60)
             if self.routeController.deviceOnlineStatus != "offline" {
-                print("Pop up")
+                print("autoRefreshData(): Opening 'Up to date' popup")
                 self.popUpText = "Up to date" // reset (remove emoji)
                 self.webRequestJustFinished = true
             }
