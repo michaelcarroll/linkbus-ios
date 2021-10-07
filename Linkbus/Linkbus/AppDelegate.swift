@@ -24,8 +24,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     func application(_ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions:
             [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        FirebaseConfiguration.shared.setLoggerLevel(FirebaseLoggerLevel.min)
-        FirebaseConfiguration.shared.analyticsConfiguration.setAnalyticsCollectionEnabled(false)
         FirebaseApp.configure()
 
         return true
