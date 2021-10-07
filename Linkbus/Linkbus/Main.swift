@@ -340,14 +340,19 @@ func autoRefreshData(self: Home) {
         print("autoRefreshData(): Refreshing data")
         print(NSString(format: "autoRefreshData(): Times changed: %@ != %@", self.lastRefreshTimeString, currentTime))
         self.routeController.webRequest()
-        let elapsed = Date().timeIntervalSince(self.lastRefreshTime)
-        if elapsed > 61 { // only show popUp if seconds elapsed since lastRefreshTime > 61s (app was in background - otherwise will always be 60)
-            if self.routeController.deviceOnlineStatus != "offline" {
-                print("autoRefreshData(): Opening 'Up to date' popup")
-                self.popUpText = "Up to date" // reset (remove emoji)
-                self.webRequestJustFinished = true
+            // Wait for web reuest to finish
+            .notify(queue: .main) {
+                print("autoRefreshData(): webRequest finished")
+                let elapsed = Date().timeIntervalSince(self.lastRefreshTime)
+                if elapsed > 61 { // only show popUp if seconds elapsed since lastRefreshTime > 61s (app was in background - otherwise will always be 60)
+                    if self.routeController.deviceOnlineStatus != "offline" {
+                        print("autoRefreshData(): Opening 'Up to date' popup")
+                        self.popUpText = "Up to date" // reset (remove emoji)
+                        self.webRequestJustFinished = true
+                    }
+                }
             }
-        }
+        
         self.lastRefreshTimeString = currentTime
         self.lastRefreshTime = time
     }

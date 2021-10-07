@@ -95,7 +95,8 @@ extension RouteController {
         }
     }
     
-    func webRequest() {
+    func webRequest() -> DispatchGroup {
+        let dispatchGroup = DispatchGroup()
         if webRequestInProgress == false {
             let startTime = NSDate().timeIntervalSince1970
             // Show the loading indicator after the Linkbus API takes more than 1 second to respond
@@ -117,7 +118,7 @@ extension RouteController {
             // We can then display routes when they load and displays alerts after, once they load.
             // Route data from our API can be injected into routes after the fact.
             
-            let dispatchGroup = DispatchGroup()
+            
             
             // CSBSJU API
             dispatchGroup.enter()
@@ -195,8 +196,8 @@ extension RouteController {
                 print("webRequest(): processRoutesAndAlerts finished")
                 print(NSString(format:"webRequest(): Web requests took %.4f seconds", NSDate().timeIntervalSince1970 - startTime))
             }
-            
         }
+        return dispatchGroup
     }
     
     func fetchCsbsjuApi(completionHandler: @escaping (BusSchedule?) -> Void, yesterdaysRoutes: Bool = false) {
