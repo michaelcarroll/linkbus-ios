@@ -104,10 +104,10 @@ struct Home: View {
                             .transition(.opacity)
                     }
                         .padding(10)
-                        .background(Color.blue)
-                        .foregroundColor(Color.white)
-                        //.background(colorScheme == .dark ? Color(UIColor.secondarySystemBackground) : Color(UIColor.secondarySystemBackground))
-                        //.foregroundColor(colorScheme == .dark ? Color.white : Color.black)
+                        //.background(Color.blue)
+                        //.foregroundColor(Color.white)
+                        .background(colorScheme == .dark ? Color(UIColor.secondarySystemBackground) : Color(UIColor.secondarySystemBackground))
+                        .foregroundColor(colorScheme == .dark ? Color.white : Color.black)
                         .cornerRadius(18.0)
                         .padding(50)
                 }
@@ -140,10 +140,10 @@ struct Home: View {
                             .transition(.opacity)
                     }
                         .padding(10)
-                        .background(Color.blue)
-                        .foregroundColor(Color.white)
-                        //.background(colorScheme == .dark ? Color(UIColor.secondarySystemBackground) : Color(UIColor.secondarySystemBackground))
-                        //.foregroundColor(colorScheme == .dark ? Color.white : Color.black)
+                        //.background(Color.blue)
+                        //.foregroundColor(Color.white)
+                        .background(colorScheme == .dark ? Color(UIColor.secondarySystemBackground) : Color(UIColor.secondarySystemBackground))
+                        .foregroundColor(colorScheme == .dark ? Color.white : Color.black)
                         .cornerRadius(18.0)
                         .padding(50)
                 }
@@ -340,10 +340,11 @@ func autoRefreshData(self: Home) {
         print("autoRefreshData(): Refreshing data")
         print(NSString(format: "autoRefreshData(): Times changed: %@ != %@", self.lastRefreshTimeString, currentTime))
         self.routeController.webRequest()
-            // Wait for web reuest to finish
+            // Wait for web request to finish
             .notify(queue: .main) {
                 print("autoRefreshData(): webRequest finished")
                 let elapsed = Date().timeIntervalSince(self.lastRefreshTime)
+                print(NSString(format: "autoRefreshData(): Elapsed time since lastRefreshTime: %f", elapsed))
                 if elapsed > 61 { // only show popUp if seconds elapsed since lastRefreshTime > 61s (app was in background - otherwise will always be 60)
                     if self.routeController.deviceOnlineStatus != "offline" {
                         print("autoRefreshData(): Opening 'Up to date' popup")
@@ -351,10 +352,9 @@ func autoRefreshData(self: Home) {
                         self.webRequestJustFinished = true
                     }
                 }
+                self.lastRefreshTimeString = currentTime
+                self.lastRefreshTime = time
             }
-        
-        self.lastRefreshTimeString = currentTime
-        self.lastRefreshTime = time
     }
 }
 
