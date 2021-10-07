@@ -6,6 +6,7 @@
 //  Copyright © 2019 Jean-Marc Boullianne. All rights reserved.
 //
 import SwiftUI
+import FirebaseAnalytics
 
 struct RouteCard: View {
     
@@ -132,6 +133,7 @@ struct RouteCard: View {
         //.shadow(color: Color.black.opacity(0.2), radius: 7, x: 0, y: 2)
         .onTapGesture {
             self.showRouteSheet = true
+            Analytics.logEvent(AnalyticsEventSelectItem, parameters: [AnalyticsParameterContent: self.route.title, AnalyticsParameterContentType: "RouteClicked"])
         }
         .sheet(isPresented: $showRouteSheet) {
             RouteSheet(route: self.route, routeController: self.routeController)

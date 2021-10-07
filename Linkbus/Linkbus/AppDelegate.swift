@@ -7,13 +7,27 @@ The application delegate.
 
 import UIKit
 import UserNotifications
+import Firebase
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
 
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
-        //registerForPushNotifications()
+//    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+//        // Override point for customization after application launch.
+//        //registerForPushNotifications()
+//        return true
+//    }
+    
+    var window: UIWindow?
+
+    // Configure a FirebaseApp shared instance
+    func application(_ application: UIApplication,
+        didFinishLaunchingWithOptions launchOptions:
+            [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        FirebaseConfiguration.shared.setLoggerLevel(FirebaseLoggerLevel.min)
+        FirebaseConfiguration.shared.analyticsConfiguration.setAnalyticsCollectionEnabled(false)
+        FirebaseApp.configure()
+
         return true
     }
     
@@ -71,6 +85,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
               }
           }
       }
+    
+    
 
 }
 
