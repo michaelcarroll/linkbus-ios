@@ -1,0 +1,43 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "ActivityIndicatorView",
+        "repositoryURL": "https://github.com/exyte/ActivityIndicatorView.git",
+        "state": {
+          "branch": null,
+          "revision": "939cd272022c6d58ef34e36de0e96bd311e05e7d",
+          "version": "1.0.0"
+        }
+      },
+      {
+        "package": "PartialSheet",
+        "repositoryURL": "https://github.com/AndreaMiotto/PartialSheet",
+        "state": {
+          "branch": null,
+          "revision": "422d748bfb149b2af4b48e43b7b6197bd8a727c1",
+          "version": "2.1.14"
+        }
+      },
+      {
+        "package": "PopupView",
+        "repositoryURL": "https://github.com/exyte/PopupView.git",
+        "state": {
+          "branch": null,
+          "revision": "0d37d6f94e0ec9b38ab43300213ad72d28af921f",
+          "version": "1.0.2"
+        }
+      },
+      {
+        "package": "SwiftSoup",
+        "repositoryURL": "https://github.com/scinfu/SwiftSoup",
+        "state": {
+          "branch": null,
+          "revision": "02c63b7be50bda384f22c56c64d347231754a07e",
+          "version": "2.3.3"
+        }
+      }
+    ]
+  },
+  "version": 1
+}
