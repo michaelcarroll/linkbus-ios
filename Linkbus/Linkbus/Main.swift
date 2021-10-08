@@ -106,10 +106,11 @@ struct Home: View {
                         .padding(10)
                         //.background(Color.blue)
                         //.foregroundColor(Color.white)
-                        .background(colorScheme == .dark ? Color(UIColor.secondarySystemBackground) : Color(UIColor.secondarySystemBackground))
+                        .background(colorScheme == .dark ? Color(UIColor.secondarySystemBackground) : Color(UIColor.systemBackground))
                         .foregroundColor(colorScheme == .dark ? Color.white : Color.black)
                         .cornerRadius(18.0)
                         .padding(50)
+                        .shadow(color: Color.black.opacity(0.2), radius: 7, x: 0, y: 2)
                 }
             }
             else if #available(iOS 14.0, *) { // iOS 14
@@ -139,13 +140,14 @@ struct Home: View {
                             .animation(.default)
                             .transition(.opacity)
                     }
-                        .padding(10)
-                        //.background(Color.blue)
-                        //.foregroundColor(Color.white)
-                        .background(colorScheme == .dark ? Color(UIColor.secondarySystemBackground) : Color(UIColor.secondarySystemBackground))
-                        .foregroundColor(colorScheme == .dark ? Color.white : Color.black)
-                        .cornerRadius(18.0)
-                        .padding(50)
+                    .padding(10)
+                    //.background(Color.blue)
+                    //.foregroundColor(Color.white)
+                    .background(colorScheme == .dark ? Color(UIColor.secondarySystemBackground) : Color(UIColor.systemBackground))
+                    .foregroundColor(colorScheme == .dark ? Color.white : Color.black)
+                    .cornerRadius(18.0)
+                    .padding(50)
+                    .shadow(color: Color.black.opacity(0.2), radius: 7, x: 0, y: 2)
                 }
 
             } else { // iOS 13
@@ -343,18 +345,18 @@ func autoRefreshData(self: Home) {
             // Wait for web request to finish
             .notify(queue: .main) {
                 print("autoRefreshData(): webRequest finished")
-                let elapsed = Date().timeIntervalSince(self.lastRefreshTime)
-                print(NSString(format: "autoRefreshData(): Elapsed time since lastRefreshTime: %f", elapsed))
-                if elapsed > 61 { // only show popUp if seconds elapsed since lastRefreshTime > 61s (app was in background - otherwise will always be 60)
+                let secondsSinceLastRefresh = Date().timeIntervalSince(self.lastRefreshTime)
+                print(NSString(format: "autoRefreshData(): seconds since last refresh: %f", secondsSinceLastRefresh))
+                if secondsSinceLastRefresh > 61 { // only show popUp if seconds elapsed since lastRefreshTime > 61s (app was in background - otherwise will always be 60)
                     if self.routeController.deviceOnlineStatus != "offline" {
                         print("autoRefreshData(): Opening 'Up to date' popup")
                         self.popUpText = "Up to date" // reset (remove emoji)
                         self.webRequestJustFinished = true
                     }
                 }
-                self.lastRefreshTimeString = currentTime
                 self.lastRefreshTime = time
             }
+        self.lastRefreshTimeString = currentTime
     }
 }
 

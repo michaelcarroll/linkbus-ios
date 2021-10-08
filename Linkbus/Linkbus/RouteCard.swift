@@ -79,7 +79,6 @@ struct RouteCard: View {
                             else if (route.nextBusTimer.contains("Now")) {
                                 let delay = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: false) { (delay) in
                                     self.timer = route.nextBusTimer
-                                    print("executed")
                                 }
                                 Text(timer)
                                     .font(Font.custom("HelveticaNeue", size: 13))
