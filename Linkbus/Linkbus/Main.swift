@@ -48,8 +48,8 @@ struct Home: View {
     }
     
     var loadingIndicator: some View {
-        ActivityIndicatorView(isVisible: $routeController.webRequestIsSlow, type: .gradient([Color.white, Color.blue]))
-            .frame(width: 19, height: 19)
+        ActivityIndicatorView(isVisible: $routeController.webRequestIsSlow, type: .gradient([(colorScheme == .dark ? Color(UIColor.secondarySystemBackground) : Color(UIColor.systemBackground)), Color.blue]))
+            .frame(width: 18, height: 18)
     }
     
     // init removes seperator/dividers from list, in future maybe use scrollview
@@ -109,11 +109,10 @@ struct Home: View {
                         .padding(10)
                         //.background(Color.blue)
                         //.foregroundColor(Color.white)
-                        .background(colorScheme == .dark ? Color(UIColor.secondarySystemBackground) : Color(UIColor.systemBackground))
+                        .background(colorScheme == .dark ? Color(UIColor.secondarySystemBackground) : Color(UIColor.secondarySystemBackground))
                         .foregroundColor(colorScheme == .dark ? Color.white : Color.black)
                         .cornerRadius(18.0)
                         .padding(50)
-                        .shadow(color: Color.black.opacity(0.2), radius: 7, x: 0, y: 2)
                 }
             }
             else if #available(iOS 14.0, *) { // iOS 14
@@ -146,11 +145,10 @@ struct Home: View {
                     .padding(10)
                     //.background(Color.blue)
                     //.foregroundColor(Color.white)
-                    .background(colorScheme == .dark ? Color(UIColor.secondarySystemBackground) : Color(UIColor.systemBackground))
+                    .background(colorScheme == .dark ? Color(UIColor.secondarySystemBackground) : Color(UIColor.secondarySystemBackground))
                     .foregroundColor(colorScheme == .dark ? Color.white : Color.black)
                     .cornerRadius(18.0)
                     .padding(50)
-                    .shadow(color: Color.black.opacity(0.2), radius: 7, x: 0, y: 2)
                 }
 
             } else { // iOS 13
@@ -209,12 +207,10 @@ struct Home: View {
         // .hoverEffect(.lift)
         .onReceive(timer) { time in
             if self.counter >= 1 {
-                // Online Status
-                titleOnlineStatus(self: self, routeController: self.routeController)
                 // Greeting
                 titleGreeting(self: self)
-                // Date changed
-                titleDate(self: self, routeController: self.routeController)
+                // Title controller
+                titleController(self: self, routeController: self.routeController)
             }
             self.counter += 1
             // Auto refresh
@@ -240,24 +236,17 @@ struct Home: View {
 //    }
 //}
 
-func titleDate(self: Home, routeController: RouteController) {
-    if routeController.dateIsChanged {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "EEEE, MMM d"
-        let formattedDate = formatter.string(from: routeController.selectedDate)
-        self.menuBarTitle = "⏭ " + formattedDate
-    }
-    else {
-        self.menuBarTitle = self.greeting
-    }
-}
-
-func titleOnlineStatus(self: Home, routeController: RouteController) {
-    // print("online status: " + routeController.deviceOnlineStatus)
+func titleController(self: Home, routeController: RouteController) {
     if routeController.deviceOnlineStatus == "offline" {
         self.menuBarTitle = "Offline"
     }
-    else if (routeController.deviceOnlineStatus == "online" || routeController.deviceOnlineStatus == "back online") {
+    else if routeController.dateIsChanged {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEEE, MMM d"
+        let formattedDate = formatter.string(from: routeController.selectedDate)
+        self.menuBarTitle = formattedDate + " ⏭"
+    }
+    else {
         self.menuBarTitle = self.greeting
     }
 }
@@ -310,10 +299,10 @@ func titleGreeting(self: Home) {
                 let randomGreeting = morningGreetings.randomElement()
                 self.greeting = randomGreeting!
             } else if (component.month == 10) {
-                let morningGreetings = ["Good morning 🌅", "Bonjour 🌅", "Buenos días 🌅", "Good morning 🍁", "Good morning 🍁", "Good morning 🍁"]
+                let morningGreetings = ["Good morning 🌅", "Bonjour 🌅", "Buenos días 🌅", "Good morning 🍂", "Good morning 🍂", "Good morning 🍁"]
                 let randomGreeting = morningGreetings.randomElement()
                 self.greeting = randomGreeting!
-            } else if (component.month == 12) {
+            } else if (component.month == 12 || component.month == 1) {
                 let morningGreetings = ["Good morning 🌅", "Bonjour 🌅", "Buenos días 🌅", "Good morning ❄️", "Good morning ❄️", "Good morning ❄️"]
                 let randomGreeting = morningGreetings.randomElement()
                 self.greeting = randomGreeting!
@@ -350,7 +339,7 @@ func autoRefreshData(self: Home) {
                 logger.info("webRequest finished")
                 let secondsSinceLastRefresh = Date().timeIntervalSince(self.lastRefreshTime)
                 logger.info("seconds since last refresh: \(secondsSinceLastRefresh)")
-                if secondsSinceLastRefresh > 61 { // only show popUp if seconds elapsed since lastRefreshTime > 61s (app was in background - otherwise will always be 60)
+                if secondsSinceLastRefresh > 120 { // only show popUp if seconds elapsed since lastRefreshTime > 120s (app was in background - otherwise will always be ~60)
                     if self.routeController.deviceOnlineStatus != "offline" {
                         logger.info("Opening 'Up to date' popup")
                         self.popUpText = "Up to date" // reset (remove emoji)

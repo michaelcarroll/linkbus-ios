@@ -3,7 +3,7 @@
     "pins": [
       {
         "package": "ActivityIndicatorView",
-        "repositoryURL": "https://github.com/exyte/ActivityIndicatorView.git",
+        "repositoryURL": "https://github.com/exyte/ActivityIndicatorView",
         "state": {
           "branch": null,
           "revision": "939cd272022c6d58ef34e36de0e96bd311e05e7d",
@@ -21,11 +21,11 @@
       },
       {
         "package": "PopupView",
-        "repositoryURL": "https://github.com/exyte/PopupView.git",
+        "repositoryURL": "https://github.com/exyte/PopupView",
         "state": {
-          "branch": null,
+          "branch": "master",
           "revision": "0d37d6f94e0ec9b38ab43300213ad72d28af921f",
-          "version": "1.0.2"
+          "version": null
         }
       },
       {
@@ -59,9 +59,9 @@
         "package": "SwiftSoup",
         "repositoryURL": "https://github.com/scinfu/SwiftSoup",
         "state": {
-          "branch": null,
+          "branch": "master",
           "revision": "02c63b7be50bda384f22c56c64d347231754a07e",
-          "version": "2.3.3"
+          "version": null
         }
       }
     ]

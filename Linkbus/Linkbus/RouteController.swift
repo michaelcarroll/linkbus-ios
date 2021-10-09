@@ -106,10 +106,10 @@ extension RouteController {
         let dispatchGroup = DispatchGroup()
         if webRequestInProgress == false {
             let startTime = NSDate().timeIntervalSince1970
-            // Show the loading indicator after the Linkbus API takes more than 1 second to respond
-            Timer.scheduledTimer(withTimeInterval: 2.2, repeats: false) { timer in
+            // Show the loading indicator after the Linkbus API takes more than 3 seconds to respond
+            Timer.scheduledTimer(withTimeInterval: 3.0, repeats: false) { timer in
                 if self.webRequestInProgress {
-                    logger.info("Web request is taking more than 2.2 seconds")
+                    logger.info("Web request is taking more than 3 seconds")
                     self.webRequestIsSlow = true
                 }
             }
@@ -241,14 +241,9 @@ extension RouteController {
             }
             else {
                 DispatchQueue.main.async {
+                    print("deviceOnlineStatus: " + self.deviceOnlineStatus)
                     if self.deviceOnlineStatus == "offline" {
                         self.deviceOnlineStatus = "back online"
-                    }
-                    else if self.deviceOnlineStatus == "back online" {
-                        self.deviceOnlineStatus = "online"
-                    }
-                    else {
-                        self.deviceOnlineStatus = "online"
                     }
                     self.localizedDescription = "no error"
                     

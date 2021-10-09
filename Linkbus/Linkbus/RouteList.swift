@@ -22,7 +22,7 @@ struct RouteList: View {
                 Routes(routeController: self.routeController)
             }
             .padding(.horizontal, 12)
-            .transition(.scale)
+            .transition(.opacity)
             .animation(.default)
             .padding(.top, 4)
         } else {

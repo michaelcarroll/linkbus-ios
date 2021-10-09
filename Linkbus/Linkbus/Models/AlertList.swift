@@ -24,7 +24,7 @@ struct AlertList: View {
             }
             .padding(.top, 4)
             .padding(.horizontal, 12)
-            .transition(.scale)
+            .transition(.opacity)
             .animation(.default)
             .frame(maxWidth: .infinity, alignment: .leading)
             //.listRowBackground((colorScheme == .dark ? Color(UIColor.systemBackground) : Color(UIColor.systemGray6)))
