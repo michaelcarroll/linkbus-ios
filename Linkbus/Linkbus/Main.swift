@@ -10,6 +10,9 @@ import SwiftUI
 import PartialSheet
 import ActivityIndicatorView
 import PopupView
+import Logging
+
+private let logger = Logger(label: "com.michaelcarroll.Linkbus.Main")
 
 struct Home: View {
     
@@ -32,7 +35,6 @@ struct Home: View {
     @State var webRequestJustFinished = false
     @State var lastRefreshTime = Date()
     
-    
     var calendarButton: some View {
         //NavigationLink(destination: ChangeDate(routeController: self.routeController)) {
         Button(action: { self.showingChangeDate.toggle() }) {
@@ -52,6 +54,7 @@ struct Home: View {
     
     // init removes seperator/dividers from list, in future maybe use scrollview
     init() {
+
         self.routeController = RouteController()
         //UINavigationBar.appearance().backgroundColor = .systemGroupedBackground // currently impossible to change background color with navigationview, in future swiftui use .systemGroupedBackground
         
@@ -339,17 +342,17 @@ func autoRefreshData(self: Home) {
     //                print("current time: " + currentTime)
     //                print("local desc: " + routeController.localizedDescription
     if self.routeController.initalWebRequestFinished && self.lastRefreshTimeString != currentTime {
-        print("autoRefreshData(): Refreshing data")
-        print(NSString(format: "autoRefreshData(): Times changed: %@ != %@", self.lastRefreshTimeString, currentTime))
+        logger.info("Refreshing data")
+        logger.info("Times changed: \(self.lastRefreshTimeString) != \(currentTime)")
         self.routeController.webRequest()
             // Wait for web request to finish
             .notify(queue: .main) {
-                print("autoRefreshData(): webRequest finished")
+                logger.info("webRequest finished")
                 let secondsSinceLastRefresh = Date().timeIntervalSince(self.lastRefreshTime)
-                print(NSString(format: "autoRefreshData(): seconds since last refresh: %f", secondsSinceLastRefresh))
+                logger.info("seconds since last refresh: \(secondsSinceLastRefresh)")
                 if secondsSinceLastRefresh > 61 { // only show popUp if seconds elapsed since lastRefreshTime > 61s (app was in background - otherwise will always be 60)
                     if self.routeController.deviceOnlineStatus != "offline" {
-                        print("autoRefreshData(): Opening 'Up to date' popup")
+                        logger.info("Opening 'Up to date' popup")
                         self.popUpText = "Up to date" // reset (remove emoji)
                         self.webRequestJustFinished = true
                     }
