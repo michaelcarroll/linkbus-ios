@@ -173,16 +173,20 @@ extension RouteController {
             }
             
             // Campus alert
-            dispatchGroup.enter()
-            fetchCampusAlert { response in
-                DispatchQueue.main.async {
-                    logger.info("fetchCampusAlert finished")
-                    if response != nil {
-                        self.processCampusAlert(data: response!)
+            if !dateIsChanged {
+                dispatchGroup.enter()
+                fetchCampusAlert { response in
+                    DispatchQueue.main.async {
+                        logger.info("fetchCampusAlert finished")
+                        if response != nil {
+                            self.processCampusAlert(data: response!)
+                        }
+                        logger.info("fetchCampusAlert took \(NSDate().timeIntervalSince1970 - startTime) seconds")
+                        dispatchGroup.leave()
                     }
-                    logger.info("fetchCampusAlert took \(NSDate().timeIntervalSince1970 - startTime) seconds")
-                    dispatchGroup.leave()
                 }
+            } else {
+                logger.debug("Not fetching campus alert because date is changed")
             }
             
             // Linkbus API that connects to website
@@ -291,6 +295,14 @@ extension RouteController {
         //            let dateEncoded = date.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
         //            postString += "ctl00%24BodyContent%24BusSchedule%24SelectedDate=" + dateEncoded!
         //        }
+        if dateIsChanged {
+            let formatter = DateFormatter()
+            formatter.dateStyle = .short
+            let formattedDate = formatter.string(from: self.selectedDate)
+            logger.info("Fetching bus message for \(formattedDate)")
+            let dateEncoded = formattedDate.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
+            postString += "ctl00%24BodyContent%24BusSchedule%24SelectedDate=" + dateEncoded!
+        }
         postString += "&__VIEWSTATE=%2FwEPDwUJMjUxNjA1NzE0ZBgGBUpjdGwwMCRCb2R5Q29udGVudCRCdXNTY2hlZHVsZSRSZXBlYXRlclRvZGF5Um91dGVzJGN0bDAyJEdyaWRWaWV3VG9kYXlUaW1lcw88KwAMAQgCAWQFSmN0bDAwJEJvZHlDb250ZW50JEJ1c1NjaGVkdWxlJFJlcGVhdGVyVG9kYXlSb3V0ZXMkY3RsMDQkR3JpZFZpZXdUb2RheVRpbWVzDzwrAAwBCAIBZAVKY3RsMDAkQm9keUNvbnRlbnQkQnVzU2NoZWR1bGUkUmVwZWF0ZXJUb2RheVJvdXRlcyRjdGwwMSRHcmlkVmlld1RvZGF5VGltZXMPPCsADAEIAgFkBUpjdGwwMCRCb2R5Q29udGVudCRCdXNTY2hlZHVsZSRSZXBlYXRlclRvZGF5Um91dGVzJGN0bDAzJEdyaWRWaWV3VG9kYXlUaW1lcw88KwAMAQgCAWQFSmN0bDAwJEJvZHlDb250ZW50JEJ1c1NjaGVkdWxlJFJlcGVhdGVyVG9kYXlSb3V0ZXMkY3RsMDAkR3JpZFZpZXdUb2RheVRpbWVzDzwrAAwBCAIBZAVKY3RsMDAkQm9keUNvbnRlbnQkQnVzU2NoZWR1bGUkUmVwZWF0ZXJUb2RheVJvdXRlcyRjdGwwNSRHcmlkVmlld1RvZGF5VGltZXMPPCsADAEIAgFkWGh%2B6w%2BaUlr4YOYVCBNBCh%2FBBLI%3D"
         postString += "&__VIEWSTATEGENERATOR=9BAD42EF"
         postString += "&__EVENTVALIDATION=%2FwEdAAJuu0YtVtaTDWfPQnmvmzb0LRHL%2FnpThEIWeX7N%2BkLIDZtqPuTRCdRUPrjcObmvVnKFIOev"
@@ -560,7 +572,7 @@ extension RouteController {
             
             // Create alert from campus alert
             // Only add alert if message is not empty string and is valid
-            if self.campusAlert.count > 10 && self.campusAlert.firstIndex(of: ">") == nil  && self.campusAlert.firstIndex(of: "<") == nil && self.campusAlert.count < 100 {
+            if !self.dateIsChanged && self.campusAlert.count > 10 && self.campusAlert.firstIndex(of: ">") == nil  && self.campusAlert.firstIndex(of: "<") == nil && self.campusAlert.count < 100 {
                 // Find the setting which has msgId 1 meaning campus alert settings
                 let index = linkbusApiResponse.schoolAlertsSettings.firstIndex(where: {$0.msgId == 1})
                 let campusAlertSettings = linkbusApiResponse.schoolAlertsSettings[index!]
@@ -730,7 +742,16 @@ extension RouteController {
                         nextBusTimer = "Departing now"
                     }
                     else { // no range
-                        nextBusTimer = timeDifference
+                        // If next route time is greater than 60 mins, show clock time
+                        if Date().timeIntervalSince(nextBusStart) > -(60 * 59)  {
+                            nextBusTimer = timeDifference // Example: 8 minutes
+                        } else {
+                            let dateFormatter = DateFormatter()
+                            dateFormatter.dateFormat = "h:mm a"
+                            dateFormatter.timeZone = TimeZone(identifier: "America/Central")
+                            dateFormatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
+                            nextBusTimer = dateFormatter.string(from: nextBusStart) // Example: 5:55 PM
+                        }
                     }
                     tempRoute.nextBusTimer = nextBusTimer
                     

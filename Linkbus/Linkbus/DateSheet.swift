@@ -37,7 +37,7 @@ struct DateSheet: View {
             // If this vvv is uncommented then the sheet will close when a date is selected
             self.presentationMode.wrappedValue.dismiss()
             if #available(iOS 14.0, *) {
-            self.home.showingChangeDate = false;
+                self.home.showingChangeDate = false;
             }
         })
     }
