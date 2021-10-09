@@ -9,6 +9,7 @@
 import SwiftUI
 import SwiftSoup
 import Logging
+import FirebaseAnalytics
 
 private let logger = Logger(label: "com.michaelcarroll.Linkbus.RouteController")
 
@@ -51,6 +52,7 @@ extension RouteController {
     func changeDate(selectedDate: Date) {
         let isSelectedDateToday = Calendar.current.isDateInToday(selectedDate)
         logger.info("Changing date to \(selectedDate)")
+        Analytics.logEvent("ChangedDate", parameters: ["date": selectedDate, "is_current_date": isSelectedDateToday])
         if isSelectedDateToday {
             resetDate()
         } else {

@@ -132,7 +132,7 @@ struct RouteCard: View {
         //.shadow(color: Color.black.opacity(0.2), radius: 7, x: 0, y: 2)
         .onTapGesture {
             self.showRouteSheet = true
-            Analytics.logEvent(AnalyticsEventSelectItem, parameters: [AnalyticsParameterContent: self.route.title, AnalyticsParameterContentType: "RouteClicked"])
+            Analytics.logEvent("RouteSelected", parameters: ["route_name": self.route.title])
         }
         .sheet(isPresented: $showRouteSheet) {
             RouteSheet(route: self.route, routeController: self.routeController)
