@@ -735,7 +735,16 @@ extension RouteController {
                         nextBusTimer = "Departing now"
                     }
                     else { // no range
-                        nextBusTimer = timeDifference
+                        // If next route time is greater than 60 mins, show clock time
+                        if Date().timeIntervalSince(nextBusStart) > -(60 * 59)  {
+                            nextBusTimer = timeDifference // Example: 8 minutes
+                        } else {
+                            let dateFormatter = DateFormatter()
+                            dateFormatter.dateFormat = "h:mm a"
+                            dateFormatter.timeZone = TimeZone(identifier: "America/Central")
+                            dateFormatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
+                            nextBusTimer = dateFormatter.string(from: nextBusStart) // Example: 5:55 PM
+                        }
                     }
                     tempRoute.nextBusTimer = nextBusTimer
                     
