@@ -74,9 +74,6 @@ struct Alerts: View {
             if (routeController.localizedDescription == "The Internet connection appears to be offline.") {
                 AlertCard(alertText: alert.text, alertColor: "gray", alertRgb: alert.rgb, fullWidth: alert.fullWidth, clickable: alert.clickable, action: alert.action, routeController: routeController)
             }
-            else if (routeController.dateIsChanged) {
-                // throw away alerts if dateIsChanged -- TODO: could have this show DailyMessage (such as the one that displays on Saturdays for the mall)
-            }
             else {
                 AlertCard(alertText: alert.text, alertColor: alert.color, alertRgb: alert.rgb, fullWidth: alert.fullWidth, clickable: alert.clickable, action: alert.action, routeController: routeController)
             }
