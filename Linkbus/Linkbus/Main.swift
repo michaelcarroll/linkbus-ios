@@ -257,7 +257,7 @@ func titleGreeting(self: Home) {
     let currentDate = Date()
     let calendar = Calendar(identifier: .gregorian)
     let hour = calendar.component(.hour, from: currentDate)
-    let component = calendar.dateComponents([.month, .weekday], from: currentDate)
+    let component = calendar.dateComponents([.hour, .minute, .month, .weekday, .day], from: currentDate)
     
     var newTimeOfDay: String
     var timeOfDayChanged = false
@@ -301,9 +301,16 @@ func titleGreeting(self: Home) {
                 let randomGreeting = morningGreetings.randomElement()
                 self.greeting = randomGreeting!
             } else if (component.month == 10) {
-                let morningGreetings = ["Good morning 🌅", "Bonjour 🌅", "Buenos días 🌅", "Good morning 🍂", "Good morning 🍂", "Good morning 🍁"]
-                let randomGreeting = morningGreetings.randomElement()
-                self.greeting = randomGreeting!
+                if (component.day == 31) {
+                    let morningGreetings = ["Good morning 🎃", "Good morning 🎃", "Good morning 🎃", "Good morning 👻"]
+                    let randomGreeting = morningGreetings.randomElement()
+                    self.greeting = randomGreeting!
+                }
+                else {
+                    let morningGreetings = ["Good morning 🌅", "Bonjour 🌅", "Buenos días 🌅", "Good morning 🍂", "Good morning 🍂", "Good morning 🍁"]
+                    let randomGreeting = morningGreetings.randomElement()
+                    self.greeting = randomGreeting!
+                }
             } else if (component.month == 12 || component.month == 1) {
                 let morningGreetings = ["Good morning 🌅", "Bonjour 🌅", "Buenos días 🌅", "Good morning ❄️", "Good morning ❄️", "Good morning ❄️"]
                 let randomGreeting = morningGreetings.randomElement()
