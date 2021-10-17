@@ -115,20 +115,22 @@ struct AlertCard: View {
                             .font(Font(UIFont.fontAwesome(ofSize: 18, style: .brands)))
                     }
                     else {
-                        Text(alertText)
-                            .foregroundColor(.white)
-                            .font(Font.custom("HelveticaNeue", size: 14))
-                        if (action.contains("http")) {
-                            Text(String.fontAwesomeIcon(name: .externalLinkAlt))
+                        HStack() {
+                            Text(alertText)
                                 .foregroundColor(.white)
-                                .font(Font(UIFont.fontAwesome(ofSize: 10, style: .solid)))
+                                .font(Font.custom("HelveticaNeue", size: 14))
+                            if (action.contains("http")) {
+                                Text(String.fontAwesomeIcon(name: .externalLinkAlt))
+                                    .foregroundColor(.white)
+                                    .font(Font(UIFont.fontAwesome(ofSize: 10, style: .solid)))
+                            }
                         }
+                        .padding(12)
+                        .frame(maxWidth: self.fullWidth ? .infinity : nil, alignment: .leading)
+                        .background(alertColor)
+                        .cornerRadius(15)
                     }
                 })
-                .padding(12)
-                .frame(maxWidth: self.fullWidth ? .infinity : nil, alignment: .leading)
-                .background(alertColor)
-                .cornerRadius(15)
 //                .overlay(
 //                    RoundedRectangle(cornerRadius: 15)
 //                        .stroke(Color.white, lineWidth: 1)
