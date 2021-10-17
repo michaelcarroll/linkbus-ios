@@ -39,8 +39,13 @@ class RouteController: ObservableObject {
     public var selectedDate = Date()
     public var dateIsChanged = false;
     
+    public var configuration = URLSessionConfiguration.default
+    
     init() {
         logger.info("Initialize RouteController")
+        self.configuration.timeoutIntervalForResource = 15
+        self.configuration.timeoutIntervalForRequest = 15
+        logger.info("Calling initial webRequest()")
         let _ = webRequest()
     }
 }
@@ -59,7 +64,7 @@ extension RouteController {
             self.selectedDate = selectedDate
             self.dateIsChanged = true
             self.lbBusSchedule = LbBusSchedule(msg: "", attention: "", alerts: [Alert](), routes: [LbRoute]()) // see below
-            webRequest() // doing a full webRequest here so that it clears the arrays, if it doesn't the animation is not smooth when switching dates. Also the extra time a full webRequest takes makes the animation more pleasant... although caching while switching days can also ruin the animation
+            let _ = webRequest() // doing a full webRequest here so that it clears the arrays, if it doesn't the animation is not smooth when switching dates. Also the extra time a full webRequest takes makes the animation more pleasant... although caching while switching days can also ruin the animation
         }
     }
     
@@ -73,32 +78,7 @@ extension RouteController {
             self.lbBusSchedule.routes = []
             self.selectedDate = Date()
             self.lbBusSchedule = LbBusSchedule(msg: "", attention: "", alerts: [Alert](), routes: [LbRoute]())
-            webRequest()
-        }
-    }
-    
-    /**
-     Fetches routes from CSB/SJU API and updates the routes.
-     */
-    func routesWebRequest() {
-        self.refreshedLbBusSchedule.routes = []
-        // Grab the most up to date routes
-        let dispatchGroup = DispatchGroup()
-        dispatchGroup.enter()
-        fetchCsbsjuApi { apiResponse in
-            DispatchQueue.main.async {
-                if apiResponse != nil {
-                    self.csbsjuApiResponse = apiResponse!
-                    self.csbsjuApiOnlineStatus = "online"
-                } else {
-                    self.csbsjuApiOnlineStatus = "CsbsjuApi invalid response"
-                }
-                dispatchGroup.leave()
-            }
-        }
-        dispatchGroup.notify(queue: .main) {
-            self.processRoutes()
-            self.lbBusSchedule.routes = self.refreshedLbBusSchedule.routes
+            let _ = webRequest()
         }
     }
     
@@ -110,12 +90,13 @@ extension RouteController {
             Timer.scheduledTimer(withTimeInterval: 3.0, repeats: false) { timer in
                 if self.webRequestInProgress {
                     logger.info("Web request is taking more than 3 seconds")
+                    logger.info("Web request webRequestInProgress \(self.webRequestInProgress)")
                     self.webRequestIsSlow = true
                 }
             }
             
             webRequestInProgress = true
-            self.localizedDescription = "default"
+            self.localizedDescription = "no error"
             
             csbsjuApiResponse = BusSchedule(msg: "", attention: "", routes: [Route]())
             linkbusApiResponse = LinkbusApi(alerts: [Alert](), routes: [RouteDetail](), schoolAlertsSettings: [SchoolAlertsSettings]())
@@ -228,10 +209,10 @@ extension RouteController {
             // Add date to URL
             urlString += "?date=" + formattedDate
         }
-        logger.info("fetchCsbsjuApi(): Linkbus API URL: \(urlString)")
+        logger.info("Linkbus API URL: \(urlString)")
         let url = URL(string: urlString)!
-        
-        let task = URLSession.shared.dataTask(with: url, completionHandler: { (data, response, error) in
+
+        let task = URLSession(configuration:configuration).dataTask(with: url, completionHandler: { data, response, error in
             if let error = error {
                 DispatchQueue.main.async {
                     self.localizedDescription = error.localizedDescription
@@ -241,6 +222,7 @@ extension RouteController {
                     self.webRequestIsSlow = false
                 }
                 logger.info("Error with fetching bus schedule from CSBSJU API: \(error)")
+                completionHandler(nil)
                 return
             }
             else {
@@ -250,7 +232,6 @@ extension RouteController {
                         self.deviceOnlineStatus = "back online"
                     }
                     self.localizedDescription = "no error"
-                    
                 }
             }
             
@@ -260,6 +241,7 @@ extension RouteController {
                 DispatchQueue.main.async {
                     self.csbsjuApiOnlineStatus = "CsbsjuApi invalid response"
                 }
+                completionHandler(nil)
                 return
             }
             do {
@@ -313,14 +295,16 @@ extension RouteController {
         request.setValue("XMLHttpRequest", forHTTPHeaderField: "X-Requested-With")
         request.setValue("Mozilla/5.0 (Android 8.0)", forHTTPHeaderField: "User-Agent")
         // Create url session to send request
-        let task = URLSession.shared.dataTask(with: request, completionHandler: { (data, response, error) in
+        let task = URLSession(configuration:configuration).dataTask(with: request, completionHandler: { (data, response, error) in
             if let error = error {
                 logger.info("Error with fetching daily message: \(error)")
+                completionHandler(nil)
                 return
             }
             guard let httpResponse = response as? HTTPURLResponse,
                   (200...299).contains(httpResponse.statusCode) else {
                 logger.info("Error with the response, unexpected status code: \(String(describing: response))")
+                completionHandler(nil)
                 return
             }
             // Process HTML into data we care about, the "daily message"
@@ -385,9 +369,10 @@ extension RouteController {
         // Create request
         let request = URLRequest(url: url!)
         // Create url session to send request
-        let task = URLSession.shared.dataTask(with: request, completionHandler: { (data, response, error) in
+        let task = URLSession(configuration:configuration).dataTask(with: request, completionHandler: { (data, response, error) in
             if let error = error {
                 logger.info("Error fetching campus alert: \(error)")
+                completionHandler(nil)
                 return
             }
             guard let httpResponse = response as? HTTPURLResponse,
@@ -398,6 +383,7 @@ extension RouteController {
                     self.csbsjuApiOnlineStatus = "CsbsjuApi invalid response" // adding this to the campus alert fetch since if csbsju.edu is down the bus api likely is too, for some reason this isn't hit in the fetchCsbsjuApi method during a timeout
                     
                 }
+                completionHandler(nil)
                 return
             }
             // Process HTML into data we care about, the "campus alert"
@@ -454,16 +440,18 @@ extension RouteController {
      */
     func fetchLinkbusApi(completionHandler: @escaping (LinkbusApi?) -> Void) {
         let url = URL(string: LinkbusApiUrl)!
-        
-        let task = URLSession.shared.dataTask(with: url, completionHandler: { (data, response, error) in
+
+        let task = URLSession(configuration:configuration).dataTask(with: url, completionHandler: { (data, response, error) in
             if let error = error {
                 logger.info("Error with fetching bus schedule from Linkbus API: \(error)")
+                completionHandler(nil)
                 return
             }
             
             guard let httpResponse = response as? HTTPURLResponse,
                   (200...299).contains(httpResponse.statusCode) else {
                 logger.info("Error with the response, unexpected status code: \(String(describing: response))")
+                completionHandler(nil)
                 return
             }
             do {
@@ -511,6 +499,7 @@ extension RouteController {
         
         self.webRequestInProgress = false
         self.webRequestIsSlow = false
+        logger.info("webRequestIsSlow: \(webRequestIsSlow)")
         // Only change this once
         if(!self.initalWebRequestFinished){
             self.initalWebRequestFinished = true
@@ -611,7 +600,7 @@ extension RouteController {
                 var tempRoute = LbRoute(id: 0, title: "", times: [LbTime](), nextBusTimer: "", origin: "", originLocation: "", destination: "", destinationLocation: "", city: "", state: "", coordinates: Coordinates(longitude: 0, latitude: 0))
                 tempRoute.id = apiRoute.id!
                 tempRoute.title = apiRoute.title!
-//                logger.info(NSString(format: "Route: %@...", tempRoute.title))
+                logger.info("Route \(tempRoute.title):")
                 var tempTimes = [LbTime]()
                 
                 var tempId = 0
@@ -619,9 +608,11 @@ extension RouteController {
                 // Find this route in yesterday's route list
                 let yesterdayRouteIndex = csbsjuApiResponseYesterday.routes!.firstIndex(where: {$0.id == tempRoute.id}) ?? -1
                 // If this route was found in yesterday's route list
-                if yesterdayRouteIndex > 0 {
+                if yesterdayRouteIndex > -1 {
                     // Add yesterday's route before today's route so the routes are in the correct order
                     routeTimes = csbsjuApiResponseYesterday.routes![yesterdayRouteIndex].times! + routeTimes
+                } else {
+                    logger.warning("No \(tempRoute.title) times found for yesterday!")
                 }
                 for apiTime in routeTimes {
 //                    logger.info(apiTime)
@@ -664,6 +655,7 @@ extension RouteController {
                         dateFormatter.timeZone = TimeZone(identifier: "America/Central")
                         dateFormatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
                         let endDate = dateFormatter.date(from:isoDate!)!
+//                        let endDateString = dateFormatter.string(from: endDate)
                         let startDate = endDate
                         
                         // current time + 1 min so that a bus at 5:30:00 still appears in app if currentTime is 5:30:01
@@ -672,7 +664,7 @@ extension RouteController {
                         let currentDate = calendar.date(byAdding: .minute, value: -1, to: date)
 //                            logger.info(endDate)
                         if (endDate >= currentDate!) { // make sure end date is not in the past, if true skip add
-                            
+//                            logger.info("Time: \(endDateString)")
                             var current = false
                             if (startDate <= Date()) {
                                 current = true
@@ -691,7 +683,7 @@ extension RouteController {
                         } else {
 //                            let dateFormatter = DateFormatter()
 //                            dateFormatter.dateFormat = "MM/dd/yyyy h:mm:ss a"
-//
+//                            logger.info("Expired Time: \(endDateString)")
                         }
                     }
                 }
