@@ -43,7 +43,7 @@ struct Home: View {
                 .accessibility(label: Text("Change Date"))
 //                .padding()
         }
-        
+        .disabled(routeController.deviceOnlineStatus == "offline")
         //}.navigationBarTitle("Choose date")
     }
     
@@ -109,10 +109,11 @@ struct Home: View {
                         .padding(10)
                         //.background(Color.blue)
                         //.foregroundColor(Color.white)
-                        .background(colorScheme == .dark ? Color(UIColor.secondarySystemBackground) : Color(UIColor.secondarySystemBackground))
+                        .background(colorScheme == .dark ? Color(UIColor.systemGray6) : Color(UIColor.systemBackground))
                         .foregroundColor(colorScheme == .dark ? Color.white : Color.black)
                         .cornerRadius(18.0)
                         .padding(50)
+                        .shadow(color: Color.black.opacity(0.2), radius: 3, x: 0, y: 2)
                 }
             }
             else if #available(iOS 14.0, *) { // iOS 14
@@ -145,11 +146,12 @@ struct Home: View {
                     .padding(10)
                     //.background(Color.blue)
                     //.foregroundColor(Color.white)
-                    .background(colorScheme == .dark ? Color(UIColor.secondarySystemBackground) : Color(UIColor.secondarySystemBackground))
+                    .background(colorScheme == .dark ? Color(UIColor.systemGray6) : Color(UIColor.systemBackground))
                     .foregroundColor(colorScheme == .dark ? Color.white : Color.black)
                     .cornerRadius(18.0)
                     .padding(50)
-                }
+                    .shadow(color: Color.black.opacity(0.2), radius: 3, x: 0, y: 2)
+            }
 
             } else { // iOS 13
                 List {
@@ -340,7 +342,7 @@ func autoRefreshData(self: Home) {
                 logger.info("webRequest finished")
                 let secondsSinceLastRefresh = Date().timeIntervalSince(self.lastRefreshTime)
                 logger.info("seconds since last refresh: \(secondsSinceLastRefresh)")
-                if secondsSinceLastRefresh > 120 { // only show popUp if seconds elapsed since lastRefreshTime > 120s (app was in background - otherwise will always be ~60)
+                if secondsSinceLastRefresh > 120 { // only show popUp if seconds elapsed since lastRefreshTime > 120s (app in background - if app is in foreground this will always be ~60)
                     if self.routeController.deviceOnlineStatus != "offline" {
                         logger.info("Opening 'Up to date' popup")
                         self.popUpText = "Up to date" // reset (remove emoji)

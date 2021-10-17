@@ -22,7 +22,7 @@ struct RouteList: View {
                 Routes(routeController: self.routeController)
             }
             .padding(.horizontal, 12)
-            .transition(.opacity)
+            .transition(.opacity) // sometimes it scales, sometimes it fades, iOS 14 scales more often, iOS 15 fades more often, incosistent - switch to (.opacity) for it to always fade on iOS 15
             .animation(.default)
             .padding(.top, 4)
         } else {

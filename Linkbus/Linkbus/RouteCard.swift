@@ -111,8 +111,8 @@ struct RouteCard: View {
                         }
                     }
                     
-                    .transition(.scale)
-                    .animation(.default)
+                    .transition(.scale) // unsure if these are needed since we are animating at RouteList root
+//                    .animation(.default)
                 }
                 .padding([.top, .bottom], 8)
                 
