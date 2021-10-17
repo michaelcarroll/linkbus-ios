@@ -131,11 +131,7 @@ struct AlertCard: View {
                         .cornerRadius(15)
                     }
                 })
-//                .overlay(
-//                    RoundedRectangle(cornerRadius: 15)
-//                        .stroke(Color.white, lineWidth: 1)
-//                )
-                //.animation(.default)
+                .animation(.none)
             }
         }
         .buttonStyle(PlainButtonStyle())
