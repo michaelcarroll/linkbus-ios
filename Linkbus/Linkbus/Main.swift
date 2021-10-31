@@ -132,10 +132,7 @@ struct Home: View {
                 .popup(isPresented: $webRequestJustFinished, type: .toast, position: .top,
                        animation: .spring(), autohideIn: 3, dragToDismiss: false, closeOnTap: true) {
                     HStack(){
-                        let delay = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false) { (delay) in
-                            self.popUpText = "Up to date  🎉"
-                        }
-                        Text(self.popUpText)
+                        Text("Up to date  🎉")
                             .font(Font.custom("HelveticaNeue", size: 14))
                             .animation(.default)
                             .transition(.opacity)
