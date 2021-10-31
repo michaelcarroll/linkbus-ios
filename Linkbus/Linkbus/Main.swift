@@ -100,8 +100,6 @@ struct Home: View {
                     HStack(){
                         Text("Up to date  🎉")
                             .font(Font.custom("HelveticaNeue", size: 14))
-                            .animation(.default)
-                            .transition(.opacity)
                     }
                         .padding(10)
                         //.background(Color.blue)
@@ -134,8 +132,6 @@ struct Home: View {
                     HStack(){
                         Text("Up to date  🎉")
                             .font(Font.custom("HelveticaNeue", size: 14))
-                            .animation(.default)
-                            .transition(.opacity)
                     }
                     .padding(10)
                     //.background(Color.blue)
@@ -256,7 +252,7 @@ func titleGreeting(self: Home) {
     var newTimeOfDay: String
     var timeOfDayChanged = false
     
-    if (hour < 2) {
+    if (hour < 3) {
         newTimeOfDay = "night"
     }
     else if (hour < 6) {
